@@ -1,0 +1,47 @@
+﻿<Window x:Class="ScreenOverlayManager.OverlayView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Overlay.Name}" 
+        WindowStyle="None"
+        Width="{Binding Overlay.Width, UpdateSourceTrigger=PropertyChanged}"
+        Height="{Binding Overlay.Height, UpdateSourceTrigger=PropertyChanged}"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True"
+        IsHitTestVisible="{Binding Draggable, UpdateSourceTrigger=PropertyChanged}">
+    <Grid>
+        <Canvas x:Name="OverlayCanvas"
+                Visibility="{Binding Overlay.OverlayVisibility, UpdateSourceTrigger=PropertyChanged}">
+            <Rectangle Canvas.Top="{Binding Overlay.OuterTop, UpdateSourceTrigger=PropertyChanged}"
+                       Canvas.Left="{Binding Overlay.OuterLeft, UpdateSourceTrigger=PropertyChanged}"
+                       Width="{Binding Overlay.OuterWidth, UpdateSourceTrigger=PropertyChanged}"
+                       Height="{Binding Overlay.OuterHeight, UpdateSourceTrigger=PropertyChanged}"
+                       StrokeThickness="{Binding Overlay.Thickness, UpdateSourceTrigger=PropertyChanged}"
+                       Stroke="{Binding Overlay.OuterStroke, UpdateSourceTrigger=PropertyChanged}"
+                       Visibility="{Binding Overlay.BorderVisibility, UpdateSourceTrigger=PropertyChanged}"/>
+            <Rectangle Canvas.Top="{Binding Overlay.InnerTop, UpdateSourceTrigger=PropertyChanged}"
+                       Canvas.Left="{Binding Overlay.InnerLeft, UpdateSourceTrigger=PropertyChanged}"
+                       Width="{Binding Overlay.InnerWidth, UpdateSourceTrigger=PropertyChanged}"
+                       Height="{Binding Overlay.InnerHeight, UpdateSourceTrigger=PropertyChanged}"
+                       StrokeThickness="{Binding Overlay.Thickness, UpdateSourceTrigger=PropertyChanged}"
+                       Stroke="{Binding Overlay.InnerStroke, UpdateSourceTrigger=PropertyChanged}"
+                       Visibility="{Binding Overlay.BorderVisibility, UpdateSourceTrigger=PropertyChanged}"/>
+            <Line X1="{Binding Overlay.Cross.h_X1, UpdateSourceTrigger=PropertyChanged}"
+                  Y1="{Binding Overlay.Cross.h_Y1, UpdateSourceTrigger=PropertyChanged}"
+                  X2="{Binding Overlay.Cross.h_X2, UpdateSourceTrigger=PropertyChanged}"
+                  Y2="{Binding Overlay.Cross.h_Y2, UpdateSourceTrigger=PropertyChanged}"
+                  Stroke="{Binding Overlay.InnerStroke, UpdateSourceTrigger=PropertyChanged}"
+                  StrokeThickness="{Binding Overlay.Thickness}"
+                  Visibility="{Binding Overlay.CrosshairVisibility}"/>
+            <Line X1="{Binding Overlay.Cross.v_X1, UpdateSourceTrigger=PropertyChanged}"
+                  Y1="{Binding Overlay.Cross.v_Y1, UpdateSourceTrigger=PropertyChanged}"
+                  X2="{Binding Overlay.Cross.v_X2, UpdateSourceTrigger=PropertyChanged}"
+                  Y2="{Binding Overlay.Cross.v_Y2, UpdateSourceTrigger=PropertyChanged}"
+                  Stroke="{Binding Overlay.InnerStroke, UpdateSourceTrigger=PropertyChanged}"
+                  StrokeThickness="{Binding Overlay.Thickness}"
+                  Visibility="{Binding Overlay.CrosshairVisibility}"/>
+        </Canvas>    
+    </Grid>
+</Window>

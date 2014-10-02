@@ -1,0 +1,36 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ScreenOverlayManager.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="UpdateInterval" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1000</Value>
+    </Setting>
+    <Setting Name="SavedDirectory" Type="System.String" Scope="User">
+      <Value Profile="(Default)">overlays</Value>
+    </Setting>
+    <Setting Name="DefaultOverlayWidth" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">50</Value>
+    </Setting>
+    <Setting Name="DefaultOverlayHeight" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">50</Value>
+    </Setting>
+    <Setting Name="DefaultOverlayStrokeThickness" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+    <Setting Name="DefaultOverlayColor1" Type="System.Windows.Media.Color" Scope="User">
+      <Value Profile="(Default)">#FFFF0000</Value>
+    </Setting>
+    <Setting Name="DefaultOverlayColor2" Type="System.Windows.Media.Color" Scope="User">
+      <Value Profile="(Default)">#FFFFFFFF</Value>
+    </Setting>
+    <Setting Name="DefaultOverlayDrawCrosshair" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="DefaultOverlayPosition" Type="System.Windows.Point" Scope="User">
+      <Value Profile="(Default)">200,200</Value>
+    </Setting>
+    <Setting Name="DefaultOverlayDrawBorder" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
