@@ -84,10 +84,18 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\Overlay.cs" />
+    <Compile Include="ViewModel\AppConfigViewModel.cs" />
     <Compile Include="ViewModel\OverlayViewModel.cs" />
+    <Compile Include="View\AppConfigView.xaml.cs">
+      <DependentUpon>AppConfigView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\EditorView.xaml.cs">
       <DependentUpon>EditorView.xaml</DependentUpon>
     </Compile>
+    <Page Include="View\AppConfigView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\OverlayView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

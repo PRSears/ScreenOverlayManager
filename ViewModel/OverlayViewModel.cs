@@ -25,70 +25,37 @@ namespace ScreenOverlayManager.ViewModel
             set
             {
                 _Overlay = value;
-                OnPropertyChanged("Properties");
+                OnPropertyChanged("Overlay");
             }
         }
 
-        public bool Draggable
-        {
-            get
-            {
-                return _Draggable;
-            }
-            set
-            {
-                _Draggable = value;
-                OnPropertyChanged("Draggable");
-            }
-        }
-
-
-        #region Boxed Properties
-        private bool    _Draggable;
         private Overlay _Overlay;
-        #endregion
-
-
-        #region ICommands
-
-        #endregion
 
 
         public OverlayViewModel()
         {
-            this.Initialize();
-
             this._Overlay = new Overlay();
-            this.LoadDefaults();
+            this._Overlay.LoadDefaults();
+
+            this.Initialize();
         }
 
         public OverlayViewModel(Overlay overlay)
         {
-            this.Initialize();
-
             this._Overlay = overlay;
+            this.Initialize();
         }
 
         public override void Initialize()
         {
             base.Initialize();
-
-            this._Draggable  = false;
+            this.Overlay.PropertyChanged += Overlay_PropertyChanged;
+            //this._Draggable  = false;
         }
 
-        public void LoadDefaults()
+        private void Overlay_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            this.Overlay.X              = Properties.Settings.Default.DefaultOverlayPosition.X;
-            this.Overlay.Y              = Properties.Settings.Default.DefaultOverlayPosition.Y;
-            this.Overlay.Width          = Properties.Settings.Default.DefaultOverlayWidth;
-            this.Overlay.Height         = Properties.Settings.Default.DefaultOverlayHeight;
-            this.Overlay.Thickness      = Properties.Settings.Default.DefaultOverlayStrokeThickness;
-            this.Overlay.PrimaryColor   = Properties.Settings.Default.DefaultOverlayColor1;
-            this.Overlay.SecondaryColor = Properties.Settings.Default.DefaultOverlayColor2;
-            this.Overlay.DrawCrosshair  = Properties.Settings.Default.DefaultOverlayDrawCrosshair;
-            this.Overlay.DrawBorder     = Properties.Settings.Default.DefaultOverlayDrawBorder;
-            this.Overlay.Name           = string.Empty;
-            this.Overlay.ParentTitle    = string.Empty;
+            OnPropertyChanged("Overlay");
         }
     }
 }

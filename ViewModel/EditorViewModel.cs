@@ -7,108 +7,94 @@ using System.Collections.ObjectModel;
 using ScreenOverlayManager.Model;
 using System.Windows.Input;
 using Extender.WPF;
+using Extender;
 
 namespace ScreenOverlayManager.ViewModel
 {
     public class EditorViewModel : Extender.WPF.ViewModel
     {
-        //public Overlay_Form Overlay
-        //{
-        //    get
-        //    {
-        //        return Overlays[SelectedIndex];
-        //    }
-        //    set
-        //    {
-        //        Overlays[SelectedIndex] = value;
-        //    }
-        //}
+        public ICommand CancelCommand           { get; private set; }
+        public ICommand ResetChangesCommand     { get; private set; }
+        public ICommand FinishedEditingCommand  { get; private set; }
+        public ICommand ToggleDragCommand       { get; private set; }
 
-        //public ObservableCollection<Overlay_Form> Overlays
-        //{
-        //    get
-        //    {
-        //        return _Overlays;
-        //    }
-        //    set
-        //    {
-        //        _Overlays = value;
-        //        OnPropertyChanged("Overlays");
-        //    }
-        //}
 
-        public int SelectedIndex
+        public Overlay EditingOverlay
         {
             get
             {
-                return _SelectedIndex;
+                return _EditingOverlay;
             }
             set
             {
-                _SelectedIndex = value;
-                OnPropertyChanged("SelectedIndex");
+                _EditingOverlay = value;
+                OnPropertyChanged("EditingOverlay");
             }
         }
 
-        private int                                     _SelectedIndex;
-        //private ObservableCollection<Overlay_Form>           _Overlays;
-        //private ObservableCollection<OverlayWrapper>    _Backups;
-        
+        private Overlay _EditingOverlay;
 
-        #region ICommands
-        public ICommand LaunchPositionPickerCommand     { get; private set; }
-        public ICommand AddOverlayCommand               { get; private set; }
-        public ICommand SaveChangesCommand              { get; private set; }
-        public ICommand CancelCommand                   { get; private set; }
-        #endregion
+        private Overlay InitialState { get; set; }
 
-        public EditorViewModel() { }
 
-        //public EditorViewModel(ObservableCollection<Overlay_Form> overlays, int selectedIndex = 0)
-        //{
-        //    base.Initialize();
-
-        //    this._SelectedIndex = selectedIndex;
-        //    this._Overlays      = overlays;
-        //    this._Backups       = CreateBackups(_Overlays);
-
-        //    this.LaunchPositionPickerCommand = new RelayCommand(() => { throw new NotImplementedException(); });
-                        
-        //    //this.AddOverlayCommand
-
-        //    // 
-        //    // TODO Get rid of save button when editing an existing Overlay
-        //    //      Disable cancel button when editing an existing Overlay
-        //}
-
-        //private ObservableCollection<OverlayWrapper> CreateBackups(ObservableCollection<Overlay_Form> overlays)
-        //{
-        //    ObservableCollection<OverlayWrapper> backups = new ObservableCollection<OverlayWrapper>();
-        //    foreach(Overlay_Form o in overlays)
-        //    {
-        //        backups.Add(new OverlayWrapper(o));
-        //    }
-
-        //    return backups;
-        //}
-
-        //private void RevertBackups()
-        //{
-        //    Overlays.Clear();
-        //    foreach(OverlayWrapper w in _Backups)
-        //    {
-        //        Overlays.Add(w.GetInner());
-        //    }            
-        //}
-
-        public void AddOverlay()
+        public EditorViewModel(Overlay overlayToEdit) 
         {
+            this._EditingOverlay = overlayToEdit;
+            this.InitialState = this.EditingOverlay.Copy();
 
+            this.CancelCommand          = new RelayCommand(() => Cancel());
+            this.ResetChangesCommand    = new RelayCommand(() => Reset(true));
+            this.FinishedEditingCommand = new RelayCommand(() => CloseCommand.Execute(null));
+            this.ToggleDragCommand      = new RelayCommand
+                (
+                    () => EditingOverlay.Draggable = !EditingOverlay.Draggable,
+                    () =>
+                    {
+                        return (EditingOverlay != null) && EditingOverlay.IsVisible;
+                    }
+                );
         }
 
-        public void Cancel()
-        {
+        // TODO Add field for thickness (and double check I'm not missing anything else).
 
+        public EditorViewModel() : this(new Overlay()) 
+        {
+            this._EditingOverlay.LoadDefaults();
+        }
+
+        /// <summary>
+        /// Reverts any changes made to EditingOverlay back to the state it was in 
+        /// on initialization of the editor window.
+        /// </summary>
+        /// <param name="confirmBeforeReset">
+        /// When true a confirmation dialog must be accepted before the data is reset.
+        /// </param>
+        /// <returns>True if the data is reset.</returns>
+        protected bool Reset(bool confirmBeforeReset)
+        {
+            bool confirmed = false;
+
+            if (confirmBeforeReset)
+            {
+                confirmed = ConfirmationDialog.Show
+                (
+                    "Discard changes?",
+                    "Are you sure you want to discard the changes you just made?"
+                );
+            }
+
+            if (confirmed || !confirmBeforeReset)
+            {
+                EditingOverlay.CopyFrom(InitialState);
+                return true;
+            }
+            else return false;
+        }
+
+        protected void Cancel()
+        {
+            if (Reset(true))
+                CloseCommand.Execute(null);
         }
     }
 }

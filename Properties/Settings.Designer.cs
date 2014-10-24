@@ -142,5 +142,29 @@ namespace ScreenOverlayManager.Properties {
                 this["DefaultOverlayDrawBorder"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Debugging {
+            get {
+                return ((bool)(this["Debugging"]));
+            }
+            set {
+                this["Debugging"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("overlay_{0}.xml")]
+        public string DefaultOverlayFilenameFormat {
+            get {
+                return ((string)(this["DefaultOverlayFilenameFormat"]));
+            }
+            set {
+                this["DefaultOverlayFilenameFormat"] = value;
+            }
+        }
     }
 }

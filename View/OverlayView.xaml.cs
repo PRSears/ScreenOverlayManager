@@ -19,28 +19,6 @@ using System.Runtime.InteropServices;
 namespace ScreenOverlayManager
 {
 
-    //
-    // TODOh Re-write
-    // 
-    // Stop using a windows form to draw the overlay... switch to using my Extender's 
-    // Window manager with a WPF window. 
-    //
-    // Create a settings editor window as the parent / base window. Have all the overlays
-    // managed as children of that window.
-    //
-    // have a toggle mode so the user can move each individual overlay by dragging,
-    // then have it toggle back to being click through (IsHitTestVisible="False")
-    // 
-    // Positions will be absolute by default. can set a parent window in settings (somehow...)
-    // and position will be recorded as relative to that.
-    //      - Get parent window location, subtract overlay (absolute) position and use
-    //        that value to update overlay position on next tick
-    //
-    // Main window (whatever that ends up being) should control a timer to keep track of overlay 
-    // updates. 
-    //
-    // User leaving edit mode on an overlay triggers saving (serialization)
-
     /// <summary>
     /// Interaction logic for OverlayView.xaml
     /// </summary>
@@ -61,6 +39,8 @@ namespace ScreenOverlayManager
             }
         }
 
+        private bool JustMoved { get; set; }
+
         public OverlayView()
         {
             InitializeComponent();
@@ -80,7 +60,10 @@ namespace ScreenOverlayManager
         protected void InitWindow()
         {
             this.ViewModel.RegisterCloseAction(() => this.Close());
-            this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            this.ViewModel.Overlay.PropertyChanged += ViewModel_PropertyChanged;
+
+            this.Left   = ViewModel.Overlay.X;
+            this.Top    = ViewModel.Overlay.Y;
 
             //var trayMenu = (ContextMenu)this.Resources["SysTrayMenu"];
             //trayMenu.Items.Add();
@@ -88,16 +71,35 @@ namespace ScreenOverlayManager
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName.Equals("Draggable"))
+            Extender.Debugging.Debug.WriteMessage
+            (
+                string.Format
+                (
+                    "OverlayView ViewModel_PropertyChanged being handled for {0}.",
+                    e.PropertyName
+                ), 
+                DEBUG
+            );
+
+            if      (e.PropertyName.Equals("Draggable"))
                 this.UpdateDraggable();
+            else if (e.PropertyName.Equals("X"))
+                this.Left = ViewModel.Overlay.X;
+            else if (e.PropertyName.Equals("Y"))
+                this.Top = ViewModel.Overlay.Y;
+
+            this.OverlayCanvas.InvalidateVisual();
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
 
-            if(e.ChangedButton == MouseButton.Left)
+            if (e.ChangedButton == MouseButton.Left)
+            {
                 this.DragMove();
+                this.JustMoved = true;
+            }
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -120,7 +122,15 @@ namespace ScreenOverlayManager
 
         protected void UpdateDraggable()
         {
-            if (ViewModel.Draggable)
+            if(JustMoved && this.ViewModel != null)
+            {
+                this.ViewModel.Overlay.X = this.Left;
+                this.ViewModel.Overlay.Y = this.Top;
+
+                JustMoved = !JustMoved;
+            }
+
+            if (ViewModel.Overlay.Draggable)
                 this.ActivateHitTest();
             else
                 this.DeactivateHitTest();
@@ -129,21 +139,21 @@ namespace ScreenOverlayManager
         protected void DeactivateHitTest()
         {
             SetWindowLong
-                (
-                    this.Handle, 
-                    GWL.ExStyle,
-                    GetWindowLong(this.Handle, GWL.ExStyle) | (int)WS_EX.Transparent | (int)WS_EX.Layered
-                );
+            (
+                this.Handle, 
+                GWL.ExStyle,
+                GetWindowLong(this.Handle, GWL.ExStyle) | (int)WS_EX.Transparent | (int)WS_EX.Layered
+            );
         }
 
         protected void ActivateHitTest()
         {
             SetWindowLong
-                (
-                    this.Handle,
-                    GWL.ExStyle,
-                    GetWindowLong(this.Handle, GWL.ExStyle) & ~(int)WS_EX.Transparent & ~(int)WS_EX.Layered
-                );
+            (
+                this.Handle,
+                GWL.ExStyle,
+                GetWindowLong(this.Handle, GWL.ExStyle) & ~(int)WS_EX.Transparent & ~(int)WS_EX.Layered
+            );
         }
 
         #region Fucking bullshit
@@ -171,5 +181,13 @@ namespace ScreenOverlayManager
         [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
         public static extern int SetWindowLong(IntPtr hWnd, GWL nIndex, int dwNewLong);
         #endregion
+
+        private bool DEBUG
+        {
+            get
+            {
+                return Properties.Settings.Default.Debugging;
+            }
+        }
     }
 }

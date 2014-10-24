@@ -32,5 +32,11 @@
     <Setting Name="DefaultOverlayDrawBorder" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="Debugging" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="DefaultOverlayFilenameFormat" Type="System.String" Scope="User">
+      <Value Profile="(Default)">overlay_{0}.xml</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

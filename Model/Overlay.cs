@@ -329,6 +329,21 @@ namespace ScreenOverlayManager.Model
             {
                 return !string.IsNullOrWhiteSpace(this.ParentTitle);
             }
+        } 
+        
+        // can be ignored since the overlay will always be frozen when it first loads
+        [XmlIgnore]
+        public bool Draggable
+        {
+            get
+            {
+                return _Draggable;
+            }
+            set
+            {
+                _Draggable = value;
+                OnPropertyChanged("Draggable");
+            }
         }
 
         #region Boxed properties
@@ -356,6 +371,8 @@ namespace ScreenOverlayManager.Model
         private Color   _PrimaryColor;
 
         private bool    _IsVisible;
+
+        private bool    _Draggable;
 
         #endregion
 
@@ -427,7 +444,6 @@ namespace ScreenOverlayManager.Model
             try
             {
                 XmlSerializer deserializer = new XmlSerializer(typeof(Overlay));
-
                 return (Overlay)deserializer.Deserialize(fromFile);
             }
             catch (Exception e)
@@ -436,7 +452,7 @@ namespace ScreenOverlayManager.Model
                     (
                         e, 
                         true,
-                        "Overlay.Deserialize encountered an error while deserializing."
+                        "Overlay.Deserialize encountered an error while attempting to deserialize."
                     );
 
                 return new Overlay();
@@ -451,6 +467,78 @@ namespace ScreenOverlayManager.Model
         {
             XmlSerializer deserializer = new XmlSerializer(typeof(Overlay));
             return (Overlay)deserializer.Deserialize(fromFile);
+        }
+
+        /// <summary>
+        /// Loads default settings from the Settings.settings file. Overwrites
+        /// any existing properties.
+        /// </summary>
+        public void LoadDefaults()
+        {
+            this.X              = Properties.Settings.Default.DefaultOverlayPosition.X;
+            this.Y              = Properties.Settings.Default.DefaultOverlayPosition.Y;
+            this.Width          = Properties.Settings.Default.DefaultOverlayWidth;
+            this.Height         = Properties.Settings.Default.DefaultOverlayHeight;
+            this.Thickness      = Properties.Settings.Default.DefaultOverlayStrokeThickness;
+            this.PrimaryColor   = Properties.Settings.Default.DefaultOverlayColor1;
+            this.SecondaryColor = Properties.Settings.Default.DefaultOverlayColor2;
+            this.DrawCrosshair  = Properties.Settings.Default.DefaultOverlayDrawCrosshair;
+            this.DrawBorder     = Properties.Settings.Default.DefaultOverlayDrawBorder;
+            this.Name           = string.Empty;
+            this.ParentTitle    = string.Empty;
+        }
+
+        /// <summary>
+        /// Edits the properties of this Overlay to match those of Overlay b.
+        /// </summary>
+        /// <param name="b">Second Overlay object whose properties are being copied.</param>
+        public void CopyFrom(Overlay b)
+        {
+            this.Name           = b.Name;
+            this.X              = b.X;
+            this.Y              = b.Y;
+            this.Width          = b.Width;
+            this.Height         = b.Height;
+            this.PrimaryColor   = b.PrimaryColor;
+            this.SecondaryColor = b.SecondaryColor;
+            this.DrawBorder     = b.DrawBorder;
+            this.DrawCrosshair  = b.DrawCrosshair;
+            this.ParentTitle    = b.ParentTitle;
+            this.IsVisible      = b.IsVisible;
+        }
+
+        public override string ToString()
+        {
+            return string.Format
+                (
+                    @"Overlay ""{0}"" [ @({1},{2}) - {3} & {4} - {5}",
+                    this.Name,
+                    this.X, this.Y,
+                    this.PrimaryColor.ToString(),
+                    this.SecondaryColor.ToString(),
+                    this.IsVisible ? "Visible" : "Hidden"
+                );
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Overlay)
+            {
+                Overlay b = (Overlay)obj;
+
+                return (this.Name == b.Name) &&
+                       (this.X == b.X) &&
+                       (this.Y == b.Y) &&
+                       (this.Width == b.Width) &&
+                       (this.Height == b.Height) &&
+                       (this.PrimaryColor.Equals(b.PrimaryColor)) &&
+                       (this.SecondaryColor.Equals(b.SecondaryColor)) &&
+                       (this.DrawBorder == b.DrawBorder) &&
+                       (this.DrawCrosshair == b.DrawCrosshair) &&
+                       (this.ParentTitle == b.ParentTitle) && 
+                       (this.IsVisible == b.IsVisible);
+            }
+            else return false;
         }
 
         #region INotifyPropertyChanged Members

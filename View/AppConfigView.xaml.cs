@@ -11,23 +11,21 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Xceed.Wpf.Toolkit;
 using ScreenOverlayManager.ViewModel;
-using ScreenOverlayManager.Model;
 
 namespace ScreenOverlayManager.View
 {
     /// <summary>
-    /// Interaction logic for NewOverlayView.xaml
+    /// Interaction logic for AppConfigView.xaml
     /// </summary>
-    public partial class EditorView : Window
+    public partial class AppConfigView : Window
     {
-        private EditorViewModel ViewModel
+        AppConfigViewModel ViewModel
         {
             get
             {
-                if (DataContext is EditorViewModel)
-                    return (EditorViewModel)DataContext;
+                if (DataContext is AppConfigViewModel)
+                    return (AppConfigViewModel)DataContext;
                 else
                     return null;
             }
@@ -37,22 +35,18 @@ namespace ScreenOverlayManager.View
             }
         }
 
-        public EditorView()
-        {
-            ViewModel = new EditorViewModel();
-            Init();
-        }
-
-        public EditorView(Overlay existingOverlay)
-        {
-            ViewModel = new EditorViewModel(existingOverlay);
-            Init();
-        }
-
-        protected void Init()
+        public AppConfigView()
         {
             InitializeComponent();
-            ViewModel.RegisterCloseAction(this.Close);
+
+            this.ViewModel = new AppConfigViewModel();
+            this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        public void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals("Overlays"))
+                this.OverlaysListBox.Items.Refresh();
         }
     }
 }
