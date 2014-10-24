@@ -1,23 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using ScreenOverlayManager.Model;
+﻿using ScreenOverlayManager.Model;
 using ScreenOverlayManager.ViewModel;
+using System;
 using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Input;
 
 namespace ScreenOverlayManager
 {
+    // TODOh Implement relative positioning to parent window (matching 'ParentTitle')
 
     /// <summary>
     /// Interaction logic for OverlayView.xaml
@@ -64,6 +54,8 @@ namespace ScreenOverlayManager
 
             this.Left   = ViewModel.Overlay.X;
             this.Top    = ViewModel.Overlay.Y;
+            this.Width  = ViewModel.Overlay.Width;
+            this.Height = ViewModel.Overlay.Height;
 
             //var trayMenu = (ContextMenu)this.Resources["SysTrayMenu"];
             //trayMenu.Items.Add();
@@ -81,12 +73,16 @@ namespace ScreenOverlayManager
                 DEBUG
             );
 
-            if      (e.PropertyName.Equals("Draggable"))
+            if (e.PropertyName.Equals("Draggable"))
                 this.UpdateDraggable();
             else if (e.PropertyName.Equals("X"))
                 this.Left = ViewModel.Overlay.X;
             else if (e.PropertyName.Equals("Y"))
                 this.Top = ViewModel.Overlay.Y;
+            else if (e.PropertyName.Equals("Width"))
+                this.Width = ViewModel.Overlay.Width;
+            else if (e.PropertyName.Equals("Height"))
+                this.Height = ViewModel.Overlay.Height;
 
             this.OverlayCanvas.InvalidateVisual();
         }
@@ -107,22 +103,10 @@ namespace ScreenOverlayManager
             base.OnSourceInitialized(e);
             this.UpdateDraggable();
         }
-        
-        /// <summary>
-        /// Uses a WindowsInteropHelper to get the Handle of this WPF Window. 
-        /// [Read-Only]
-        /// </summary>
-        public IntPtr Handle
-        {
-            get
-            {
-                return new System.Windows.Interop.WindowInteropHelper(this).Handle;
-            }
-        }
 
         protected void UpdateDraggable()
         {
-            if(JustMoved && this.ViewModel != null)
+            if (JustMoved && this.ViewModel != null)
             {
                 this.ViewModel.Overlay.X = this.Left;
                 this.ViewModel.Overlay.Y = this.Top;
@@ -134,6 +118,18 @@ namespace ScreenOverlayManager
                 this.ActivateHitTest();
             else
                 this.DeactivateHitTest();
+        }
+        
+        /// <summary>
+        /// Uses a WindowsInteropHelper to get the Handle of this WPF Window. 
+        /// [Read-Only]
+        /// </summary>
+        public IntPtr Handle
+        {
+            get
+            {
+                return new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            }
         }
 
         protected void DeactivateHitTest()

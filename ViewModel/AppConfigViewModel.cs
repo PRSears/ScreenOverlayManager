@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.ObjectModel;
-using ScreenOverlayManager.Model;
+﻿using Extender;
 using Extender.WPF;
-using Extender;
-using System.Windows.Input;
+using ScreenOverlayManager.Model;
+using System;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Windows.Input;
 using Debug = Extender.Debugging.Debug;
 
 namespace ScreenOverlayManager.ViewModel
@@ -19,6 +16,7 @@ namespace ScreenOverlayManager.ViewModel
         // TODO Implement minimize to tray / close all windows on exit / etc
 
         // TODO decide when to call SaveState()
+        // TODO Have the delete command call savestate when it's done ?
 
         public ObservableCollection<Checkable<Overlay>> Overlays
         {
@@ -133,23 +131,29 @@ namespace ScreenOverlayManager.ViewModel
 
         protected void DeleteOverlay(Overlay overlay)
         {
-            //
-            // Removes the first listing in Overlays collection with a matching Overlay contained in it.
-            Debug.WriteMessage("Calling DeleteOverlay.", DEBUG);
-            Debug.WriteMessage
-            (
-                Overlays.RemoveFirst(co => co.Resource.Equals(overlay)).ToString(),
-                DEBUG
-            );
+            bool confirm = ConfirmationDialog.Show
+                ("Delete overlay?", "Are you sure you want to delete the selected overlay?");
 
-            //
-            // Uses WindowManager to close the corresponding OverlayView window.
-            WindowManager.CloseChild
-            (
-                WindowManager.Children.Where(w => w.GetType() == typeof(OverlayView))
-                                      .Cast<OverlayView>()
-                                      .FirstOrDefault(ov => ov.ViewModel.Overlay.Equals(overlay))
-            );            
+            if (confirm)
+            {
+                //
+                // Removes the first listing in Overlays collection with a matching Overlay contained in it.
+                Debug.WriteMessage("Calling DeleteOverlay.", DEBUG);
+                Debug.WriteMessage
+                (
+                    Overlays.RemoveFirst(co => co.Resource.Equals(overlay)).ToString(),
+                    DEBUG
+                );
+
+                //
+                // Uses WindowManager to close the corresponding OverlayView window.
+                WindowManager.CloseChild
+                (
+                    WindowManager.Children.Where(w => w.GetType() == typeof(OverlayView))
+                                          .Cast<OverlayView>()
+                                          .FirstOrDefault(ov => ov.ViewModel.Overlay.Equals(overlay))
+                );
+            }
         }
 
         private void Overlays_SelectionChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

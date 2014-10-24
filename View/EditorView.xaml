@@ -70,15 +70,24 @@
                     Grid.ColumnSpan="2">
             <Label Content="Overlay name" 
                    Style="{StaticResource PropertyLabel}"/>
-            <TextBox Text="{Binding EditingOverlay.Name}"
-                     Style="{StaticResource TitleTextBox}"/>
+            <TextBox Text="{Binding EditingOverlay.Name, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{StaticResource TitleTextBox}"
+                     FontSize="10"
+                     FontWeight="Normal"/>
 
             <Label Content="Relative position" 
                    Style="{StaticResource PropertyLabel}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBox Text="{Binding EditingOverlay.X}" Style="{StaticResource NumberBox}"/>
-                <TextBox Text="{Binding EditingOverlay.Y}" Style="{StaticResource NumberBox}"/>
-                <Button Content="Toggle overlay draggability"
+                <TextBox x:Name="xCoordBox" 
+                         Style="{StaticResource NumberBox}"
+                         IsEnabled="{Binding IsCoordBoxEnabled}"
+                         Text="{Binding EditingOverlay.X, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                <TextBox x:Name="yCoordBox" 
+                         Style="{StaticResource NumberBox}" 
+                         IsEnabled="{Binding IsCoordBoxEnabled}"
+                         Text="{Binding EditingOverlay.Y, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                <Button Content="{Binding ToggleDragButtonText}"
+                        FontWeight="{Binding ToggleDragButtonTextWeight}"
                         Command="{Binding ToggleDragCommand}"
                         Style="{StaticResource PickerButton}"/>
             </StackPanel>
@@ -86,14 +95,17 @@
             <Label Content="Overlay dimensions" 
                    Style="{StaticResource PropertyLabel}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBox Text="{Binding EditingOverlay.Width}" Style="{StaticResource NumberBox}"/>
-                <TextBox Text="{Binding EditingOverlay.Height}" Style="{StaticResource NumberBox}"/>
+                <TextBox Text="{Binding EditingOverlay.Width, UpdateSourceTrigger=PropertyChanged}" 
+                         Style="{StaticResource NumberBox}"/>
+                <TextBox Text="{Binding EditingOverlay.Height, UpdateSourceTrigger=PropertyChanged}" 
+                         Style="{StaticResource NumberBox}"/>
             </StackPanel>
 
             <Label Content="Parent window title" 
                    Style="{StaticResource PropertyLabel}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBox Text="{Binding EditingOverlay.ParentTitle}" Style="{StaticResource TitleTextBox}"/>
+                <TextBox Text="{Binding EditingOverlay.ParentTitle, UpdateSourceTrigger=PropertyChanged}" 
+                         Style="{StaticResource TitleTextBox}"/>
             </StackPanel>
 
         </StackPanel>

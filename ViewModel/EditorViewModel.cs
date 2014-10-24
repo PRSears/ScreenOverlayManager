@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.ObjectModel;
+﻿using Extender;
+using Extender.WPF;
 using ScreenOverlayManager.Model;
 using System.Windows.Input;
-using Extender.WPF;
-using Extender;
+using FontWeights = System.Windows.FontWeights;
 
 namespace ScreenOverlayManager.ViewModel
 {
@@ -36,7 +31,6 @@ namespace ScreenOverlayManager.ViewModel
 
         private Overlay InitialState { get; set; }
 
-
         public EditorViewModel(Overlay overlayToEdit) 
         {
             this._EditingOverlay = overlayToEdit;
@@ -46,20 +40,56 @@ namespace ScreenOverlayManager.ViewModel
             this.ResetChangesCommand    = new RelayCommand(() => Reset(true));
             this.FinishedEditingCommand = new RelayCommand(() => CloseCommand.Execute(null));
             this.ToggleDragCommand      = new RelayCommand
-                (
-                    () => EditingOverlay.Draggable = !EditingOverlay.Draggable,
-                    () =>
-                    {
-                        return (EditingOverlay != null) && EditingOverlay.IsVisible;
-                    }
-                );
+            (
+                () => EditingOverlay.Draggable = !EditingOverlay.Draggable,
+                () =>
+                {
+                    return (EditingOverlay != null) && EditingOverlay.IsVisible;
+                }
+            );
+
+            this.EditingOverlay.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName.Equals("Draggable"))
+                {
+                    this.OnPropertyChanged("ToggleDragButtonText");
+                    this.OnPropertyChanged("ToggleDragButtonTextWeight");
+                }
+            };
         }
 
-        // TODO Add field for thickness (and double check I'm not missing anything else).
+        // TODO Add field for thickness, draw border, draw crosshair 
+        // (and double check I'm not missing anything else).
 
         public EditorViewModel() : this(new Overlay()) 
         {
             this._EditingOverlay.LoadDefaults();
+        }
+
+        public string ToggleDragButtonText
+        {
+            get
+            {
+                if (EditingOverlay == null) return "Start Quick Positioning";
+
+                return EditingOverlay.Draggable ? "Stop Quick Positioning" : "Start Quick Positioning";
+            }
+        }
+
+        public System.Windows.FontWeight ToggleDragButtonTextWeight
+        {
+            get
+            {
+                return EditingOverlay.Draggable ? FontWeights.Bold : FontWeights.Normal;
+            }
+        }
+
+        public bool IsCoordBoxEnabled
+        {
+            get
+            {
+                return !EditingOverlay.Draggable;
+            }
         }
 
         /// <summary>
@@ -95,6 +125,14 @@ namespace ScreenOverlayManager.ViewModel
         {
             if (Reset(true))
                 CloseCommand.Execute(null);
+        }
+
+        private bool DEBUG
+        {
+            get
+            {
+                return Properties.Settings.Default.Debugging;
+            }
         }
     }
 }

@@ -50,7 +50,6 @@ namespace ScreenOverlayManager.ViewModel
         {
             base.Initialize();
             this.Overlay.PropertyChanged += Overlay_PropertyChanged;
-            //this._Draggable  = false;
         }
 
         private void Overlay_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

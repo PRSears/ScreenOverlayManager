@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Extender.Windows;
+using System;
 using System.ComponentModel;
 using System.Windows.Media;
-using Extender.Windows;
+using System.Xml.Serialization;
 using Point = System.Windows.Point;
 
 namespace ScreenOverlayManager.Model
@@ -449,11 +445,11 @@ namespace ScreenOverlayManager.Model
             catch (Exception e)
             {
                 Extender.Debugging.ExceptionTools.WriteExceptionText
-                    (
-                        e, 
-                        true,
-                        "Overlay.Deserialize encountered an error while attempting to deserialize."
-                    );
+                (
+                    e, 
+                    true,
+                    "Overlay.Deserialize encountered an error while attempting to deserialize."
+                );
 
                 return new Overlay();
             }
@@ -511,7 +507,7 @@ namespace ScreenOverlayManager.Model
         {
             return string.Format
                 (
-                    @"Overlay ""{0}"" [ @({1},{2}) - {3} & {4} - {5}",
+                    @"Overlay ""{0}"" [ @({1},{2}) - {3} & {4} - {5} ]",
                     this.Name,
                     this.X, this.Y,
                     this.PrimaryColor.ToString(),
