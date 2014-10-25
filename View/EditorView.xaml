@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" 
         Title="Edit Overlay" 
-        Width="440" Height="600"
+        Width="460" Height="600"
         ResizeMode="NoResize">
     <Window.Resources>
         <Style x:Key="TitleLabel" TargetType="{x:Type Label}">
@@ -39,8 +39,8 @@
                BasedOn="{StaticResource FlatActionButtonStyle}">
             <Setter Property="Height" Value="20"/>
             <Setter Property="Width" Value="auto"/>
-            <Setter Property="Margin" Value="9,1,0,0"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="10,-5,0,0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontWeight" Value="Light"/>
             <Setter Property="FontSize" Value="10"/>
@@ -53,6 +53,11 @@
             <Setter Property="Height" Value="30"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Margin" Value="10,0,0,10"/>
+        </Style>
+        <Style x:Key="PropertyToggle" TargetType="{x:Type CheckBox}">
+            <Setter Property="Margin" Value="10,10,0,10"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
         </Style>
     </Window.Resources>
     <Grid>
@@ -86,10 +91,6 @@
                          Style="{StaticResource NumberBox}" 
                          IsEnabled="{Binding IsCoordBoxEnabled}"
                          Text="{Binding EditingOverlay.Y, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
-                <Button Content="{Binding ToggleDragButtonText}"
-                        FontWeight="{Binding ToggleDragButtonTextWeight}"
-                        Command="{Binding ToggleDragCommand}"
-                        Style="{StaticResource PickerButton}"/>
             </StackPanel>
 
             <Label Content="Overlay dimensions" 
@@ -108,6 +109,28 @@
                          Style="{StaticResource TitleTextBox}"/>
             </StackPanel>
 
+        </StackPanel>
+        
+        <StackPanel Grid.Row="0" Grid.Column="1">
+            <Label Content="Line thickness"
+                   Style="{StaticResource PropertyLabel}"/>
+            <TextBox x:Name="ThicknessBox"
+                     Style="{StaticResource NumberBox}"
+                     Text="{Binding EditingOverlay.Thickness, UpdateSourceTrigger=PropertyChanged}"/>
+            <StackPanel Orientation="Horizontal">
+                <CheckBox IsChecked="{Binding EditingOverlay.DrawBorder, UpdateSourceTrigger=PropertyChanged}"
+                          Style="{StaticResource PropertyToggle}">
+                    <TextBlock Text="Draw borders"/>
+                </CheckBox>
+                <CheckBox IsChecked="{Binding EditingOverlay.DrawCrosshair, UpdateSourceTrigger=PropertyChanged}"
+                          Style="{StaticResource PropertyToggle}">
+                    <TextBlock Text="Draw cross"/>
+                </CheckBox>
+            </StackPanel>
+            <Button Content="{Binding ToggleDragButtonText}"
+                    FontWeight="{Binding ToggleDragButtonTextWeight}"
+                    Command="{Binding ToggleDragCommand}"
+                    Style="{StaticResource PickerButton}"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="0">
