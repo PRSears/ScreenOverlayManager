@@ -283,11 +283,13 @@ namespace ScreenOverlayManager.Model
         {
             get
             {
-                return _IsVisible;
+                return _IsVisible && (DrawBorder || DrawCrosshair);
             }
             set
             {
                 _IsVisible = value;
+                if (_IsVisible == true && !(DrawBorder || DrawCrosshair))
+                    DrawBorder = true;
                 OnPropertyChanged("IsVisible");
             }
         }     

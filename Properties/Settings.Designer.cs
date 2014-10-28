@@ -145,7 +145,7 @@ namespace ScreenOverlayManager.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool Debugging {
             get {
                 return ((bool)(this["Debugging"]));
@@ -164,6 +164,30 @@ namespace ScreenOverlayManager.Properties {
             }
             set {
                 this["DefaultOverlayFilenameFormat"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool StartMinimizedToTray {
+            get {
+                return ((bool)(this["StartMinimizedToTray"]));
+            }
+            set {
+                this["StartMinimizedToTray"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5000")]
+        public int AutosaveTimer {
+            get {
+                return ((int)(this["AutosaveTimer"]));
+            }
+            set {
+                this["AutosaveTimer"] = value;
             }
         }
     }

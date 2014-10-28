@@ -13,10 +13,51 @@ namespace ScreenOverlayManager.ViewModel
     public class AppConfigViewModel : Extender.WPF.ViewModel
     {
         // TODO Implement settings editor
-        // TODO Implement minimize to tray / close all windows on exit / etc
 
-        // TODO decide when to call SaveState()
-        // TODO Have the delete command call savestate when it's done ?
+        // TODO_ Make double clicking an overlay in the list open the editor for that item
+        // TODO_ Add right-click context menu to overlay list for quick options
+
+        public bool ConfiguratorVisible
+        {
+            get
+            {
+                return _ConfiguratorVisible;
+            }
+            set
+            {
+                _ConfiguratorVisible = value;
+                OnPropertyChanged("ConfiguratorVisible");
+            }
+        }
+
+        public bool ConfiguratorShowInTaskbar
+        {
+            get
+            {
+                return _ConfiguratorShowInTaskbar;
+            }
+            set
+            {
+                _ConfiguratorShowInTaskbar = value;
+                OnPropertyChanged("ConfiguratorShowInTaskbar");
+            }
+        }
+
+        /// <summary>
+        /// While AppIsClosing is false OnClosing of the View will be cancelled.
+        /// Automatically toggled on by ExitAppCommand.
+        /// </summary>
+        public bool AppIsClosing 
+        { 
+            get; 
+            protected set; 
+        }
+
+        public bool RequestingFocus
+        {
+            get;
+            set;
+        }
 
         public ObservableCollection<Checkable<Overlay>> Overlays
         {
@@ -30,7 +71,12 @@ namespace ScreenOverlayManager.ViewModel
                 OnPropertyChanged("Overlays");
             }
         }
-        private ObservableCollection<Checkable<Overlay>> _Overlays;
+
+        private ObservableCollection<Checkable<Overlay>>    _Overlays;
+        private bool                                        _ConfiguratorShowInTaskbar;
+        private bool                                        _ConfiguratorVisible;
+
+        private System.Windows.Threading.DispatcherTimer AutosaveTimer;            
 
         public ICommand ImportCommand       { get; private set; }
         public ICommand ExportCommand       { get; private set; }
@@ -41,24 +87,47 @@ namespace ScreenOverlayManager.ViewModel
         public ICommand CreateNewCommand    { get; private set; }
         public ICommand OpenSettingsCommand { get; private set; }
 
+        public ICommand HideAllCommand      { get; private set; }
+        public ICommand ShowAllCommand      { get; private set; }
+        public ICommand OpenManagerCommand  { get; private set; }
+        public ICommand HideManagerCommand  { get; private set; }
+        public ICommand ExitAppCommand      { get; private set; }
+
         protected WindowManager WindowManager;
 
         public AppConfigViewModel()
         {
+            this.ConfiguratorVisible        = !StartMinimized;
+            this.ConfiguratorShowInTaskbar  = !StartMinimized;
+
             this.Overlays       = new ObservableCollection<Checkable<Overlay>>();
             this.WindowManager  = new WindowManager();
 
             LoadState();
 
-            ImportCommand   = new RelayCommand(() => ImportFromFile());
-            ExportCommand   = new RelayCommand(() => ExportSelectedToFile(), () => HasSelected);
-            EditCommand     = new RelayCommand(() => Edit(Selected), () => HasSelected);
+            InitRelayCommands();
+
+            this.AutosaveTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = new TimeSpan(0, 0, 0, 0, this.AutosaveTime),
+                IsEnabled = true
+            };
+            this.AutosaveTimer.Tick += (s, e) => SaveState();
+        }
+
+        protected void InitRelayCommands()
+        {
+            //
+            // Main GUI functions
+            ImportCommand = new RelayCommand(() => ImportFromFile());
+            ExportCommand = new RelayCommand(() => ExportSelectedToFile(), () => HasSelected);
+            EditCommand   = new RelayCommand(() => Edit(Selected), () => HasSelected);
 
             QuickPosCommand = new RelayCommand
             (
                 () =>
                 {
-                    if(HasSelected)
+                    if (HasSelected)
                         Selected.Draggable = !SelectedIsDraggable;
                     OnPropertyChanged("QuickPosButtonText");
                 },
@@ -68,7 +137,7 @@ namespace ScreenOverlayManager.ViewModel
 
             ShowHideCommand = new RelayCommand
             (
-                () => 
+                () =>
                 {
                     Selected.IsVisible = !Selected.IsVisible;
                     OnPropertyChanged("ShowHideButtonText");
@@ -76,7 +145,7 @@ namespace ScreenOverlayManager.ViewModel
                 () => HasSelected
             );
 
-            DeleteCommand   = new RelayCommand
+            DeleteCommand = new RelayCommand
             (
                 () => DeleteSelected(),
                 () => HasSelected
@@ -91,6 +160,73 @@ namespace ScreenOverlayManager.ViewModel
             (
                 () => OpenSettingsDialog()
             );
+
+            //
+            // Tray commands
+            HideAllCommand = new RelayCommand
+            (
+                () =>
+                {
+                    foreach (Checkable<Overlay> o in _Overlays)
+                    {
+                        o.Resource.IsVisible = false;
+                    }
+                    Debug.WriteMessage("HideAllCommand", DEBUG);
+                },
+                () => _Overlays.Count > 0
+            );
+
+            ShowAllCommand = new RelayCommand
+            (
+                () =>
+                {
+                    foreach (Checkable<Overlay> o in _Overlays)
+                    {
+                        o.Resource.IsVisible = true;
+                    }
+                    Debug.WriteMessage("ShowAllCommand", DEBUG);
+                },
+                () => _Overlays.Count > 0
+            );
+
+            OpenManagerCommand = new RelayCommand
+            (
+                () =>
+                {
+                    if (this.ConfiguratorVisible && this.ConfiguratorShowInTaskbar)
+                        RequestFocus(); // Already open, so try to focus it
+
+                    this.ConfiguratorVisible        = true;
+                    this.ConfiguratorShowInTaskbar  = true;
+                }
+            );
+
+            HideManagerCommand = new RelayCommand
+            (
+                () =>
+                {
+                    this.ConfiguratorVisible        = false;
+                    this.ConfiguratorShowInTaskbar  = false;
+                }
+            );
+
+            ExitAppCommand = new RelayCommand
+            (
+                () =>
+                {
+                    this.SaveState();
+                    this.AppIsClosing = true;
+                    this.CloseCommand.Execute(null);
+                }
+            );
+        }
+
+        protected void RequestFocus()
+        {
+            Debug.WriteMessage("AppConfigViewModel requesting focus.", DEBUG);
+
+            RequestingFocus = true;
+            OnPropertyChanged("RequestingFocus");
         }
 
         public void CreateNewOverlay(bool openEditor)
@@ -158,7 +294,7 @@ namespace ScreenOverlayManager.ViewModel
 
         private void Overlays_SelectionChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            Debug.WriteMessage(string.Format("Overlays_SelectionChanged Checkable<Overlay>.({0})", e.PropertyName), DEBUG);
+            Debug.WriteMessage(string.Format("AppConfigViewModel.Overlays_SelectionChanged (Checkable<Overlay>.{0})", e.PropertyName), DEBUG);
 
             // If the selected item changes we need to refresh the context-sensitive buttons' text
             OnPropertyChanged("ShowHideButtonText");
@@ -328,27 +464,45 @@ namespace ScreenOverlayManager.ViewModel
 
         public void SaveState()
         { 
-            // Ensure the directory exists
-            if(!Directory.Exists(SavedOverlaysPath))
-                Directory.CreateDirectory(SavedOverlaysPath);
-            // Empty the directory 
-            if(!Directory.EnumerateFileSystemEntries(SavedOverlaysPath).Any())
+            //// Ensure the directory exists
+            //if(!Directory.Exists(SavedOverlaysPath))
+            //    Directory.CreateDirectory(SavedOverlaysPath);
+            //// Empty the directory 
+            //if(!Directory.EnumerateFileSystemEntries(SavedOverlaysPath).Any())
+            //{
+            //    foreach(string file in Directory.EnumerateFiles(SavedOverlaysPath))
+            //    {
+            //        File.Delete(file);
+            //    }
+            //}
+            Debug.WriteMessage("Saving Overlay list state.", DEBUG);
+
+            try
             {
-                foreach(string file in Directory.EnumerateFiles(SavedOverlaysPath))
+                if (Directory.Exists(SavedOverlaysPath))
+                    Directory.Delete(SavedOverlaysPath, true);
+
+                Directory.CreateDirectory(SavedOverlaysPath);
+
+                for (int i = 1; i <= Overlays.Count; i++)
                 {
-                    File.Delete(file);
+                    string filename = Path.Combine
+                    (
+                        SavedOverlaysPath,
+                        string.Format(OverlayNameFormat, i.ToString("D3"))
+                    );
+
+                    SaveOverlay(Overlays[i - 1].Resource, filename);
                 }
             }
-
-            for(int i = 1; i <= Overlays.Count; i++)
+            catch(Exception e)
             {
-                string filename = Path.Combine
+                Extender.Debugging.ExceptionTools.WriteExceptionText
                 (
-                    SavedOverlaysPath,
-                    string.Format(OverlayNameFormat, i.ToString("D3"))
+                    e, 
+                    true, 
+                    "Encountered a problem while saving overlays."
                 );
-
-                SaveOverlay(Overlays[i].Resource, filename);
             }
         }
 
@@ -407,6 +561,22 @@ namespace ScreenOverlayManager.ViewModel
             get
             {
                 return Properties.Settings.Default.DefaultOverlayFilenameFormat;
+            }
+        }
+
+        private bool StartMinimized
+        {
+            get
+            {
+                return Properties.Settings.Default.StartMinimizedToTray;
+            }
+        }
+
+        private int AutosaveTime
+        {
+            get
+            {
+                return Properties.Settings.Default.AutosaveTimer;
             }
         }
         #endregion

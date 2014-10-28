@@ -8,21 +8,8 @@
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             xmlns:tb="http://www.hardcodet.net/taskbar">
 
-            <ContextMenu x:Key="SysTrayMenu">
-                <MenuItem Header="Hide all overlays"/>
-                <MenuItem Header="Show all overlays"/>
-                <Separator />
-                <MenuItem Header="Edit overlays..."/>
-                <Separator />
-                <MenuItem Header="Exit"/>
-            </ContextMenu>
 
-            <tb:TaskbarIcon x:Key="TrayIcon"
-                            IconSource="img/icon.ico"
-                            ToolTipText="Overlay Manager"
-                            ContextMenu="{StaticResource SysTrayMenu}">
-            </tb:TaskbarIcon>
-            
+
             <Style x:Key="FlatActionButtonStyle" 
                 BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
                 TargetType="{x:Type Button}">

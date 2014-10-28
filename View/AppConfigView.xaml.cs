@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿using Hardcodet.Wpf.TaskbarNotification;
 using ScreenOverlayManager.ViewModel;
+using System.Windows;
 
 namespace ScreenOverlayManager.View
 {
@@ -20,7 +9,7 @@ namespace ScreenOverlayManager.View
     /// </summary>
     public partial class AppConfigView : Window
     {
-        AppConfigViewModel ViewModel
+        public AppConfigViewModel ViewModel
         {
             get
             {
@@ -34,19 +23,62 @@ namespace ScreenOverlayManager.View
                 DataContext = value;
             }
         }
+        private TaskbarIcon Tray;
 
         public AppConfigView()
         {
             InitializeComponent();
 
             this.ViewModel = new AppConfigViewModel();
+            this.ViewModel.RegisterCloseAction(() => this.Close());
             this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            UpdateWindowState();
+
+            this.Tray = (TaskbarIcon)this.TryFindResource("TrayIcon");
+            this.Tray.DataContext = this.ViewModel;
         }
 
         public void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName.Equals("Overlays"))
                 this.OverlaysListBox.Items.Refresh();
+            else if (e.PropertyName.Equals("ConfiguratorVisible") || e.PropertyName.Equals("ConfiguratorShowInTaskbar"))
+                this.UpdateWindowState();
+            else if (e.PropertyName.Equals("RequestingFocus"))
+                this.CheckFocus();
+        }
+
+        public void UpdateWindowState()
+        {
+            if (ViewModel == null) return;
+
+            this.Visibility     = ViewModel.ConfiguratorVisible ? Visibility.Visible : Visibility.Hidden;
+            this.ShowInTaskbar  = ViewModel.ConfiguratorShowInTaskbar;
+        }
+
+        public void CheckFocus()
+        {
+            if(ViewModel.RequestingFocus)
+            {
+                this.Activate();
+                ViewModel.RequestingFocus = false;
+            }
+        }
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            if (!ViewModel.AppIsClosing)
+            {
+                e.Cancel = true;
+                ViewModel.HideManagerCommand.Execute(null);
+                base.OnClosing(e);
+            }
+            else
+            {
+                base.OnClosing(e);
+                Application.Current.Shutdown();
+            }
         }
     }
 }

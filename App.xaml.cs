@@ -1,5 +1,4 @@
-﻿using Hardcodet.Wpf.TaskbarNotification;
-using System.Windows;
+﻿using System.Windows;
 
 namespace ScreenOverlayManager
 {
@@ -8,15 +7,9 @@ namespace ScreenOverlayManager
     /// </summary>
     public partial class App : Application
     {
-        private TaskbarIcon notifyIcon;
-
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
-            
-
-            notifyIcon = (TaskbarIcon)FindResource("TrayIcon");
         }
     }
 }

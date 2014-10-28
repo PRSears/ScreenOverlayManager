@@ -8,6 +8,7 @@ using System.Windows.Input;
 namespace ScreenOverlayManager
 {
     // TODOh Implement relative positioning to parent window (matching 'ParentTitle')
+    // TODO Use a visual queue when a parent window has been specified, and not found.
 
     /// <summary>
     /// Interaction logic for OverlayView.xaml
@@ -67,7 +68,7 @@ namespace ScreenOverlayManager
             (
                 string.Format
                 (
-                    "OverlayView ViewModel_PropertyChanged being handled for {0}.",
+                    "OverlayView.ViewModel_PropertyChanged ({0})",
                     e.PropertyName
                 ), 
                 DEBUG

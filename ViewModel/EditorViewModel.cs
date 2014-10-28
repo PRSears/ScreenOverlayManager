@@ -52,20 +52,18 @@ namespace ScreenOverlayManager.ViewModel
             {
                 if (e.PropertyName.Equals("Draggable"))
                 {
+                    // Update 'Quick Positioning' button text
                     this.OnPropertyChanged("ToggleDragButtonText");
                     this.OnPropertyChanged("ToggleDragButtonTextWeight");
                 }
             };
         }
 
-        // TODO Add field for thickness, draw border, draw crosshair 
-        // (and double check I'm not missing anything else).
-
         public EditorViewModel() : this(new Overlay()) 
         {
             this._EditingOverlay.LoadDefaults();
         }
-
+        
         public string ToggleDragButtonText
         {
             get
