@@ -111,11 +111,6 @@ namespace ScreenOverlayManager
             this.OverlayCanvas.InvalidateVisual();
         }
 
-        // TODOh (Debug) find a way to have the overlay behave the same when minimizing and 
-        //       closing the parent. Currently closing the parent keeps the window position static, 
-        //       whereas minimizing switches positioning to be relative the desktop (0, 0). 
-        //       I think I should pick one or the other for consistant behaviour.
-
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);

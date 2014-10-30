@@ -41,7 +41,7 @@ namespace ScreenOverlayManager.Model
         {
             get
             {
-                return IsWindow(_Handle);
+                return TitleSpecified && IsWindow(_Handle);
             }
         }
 
@@ -149,27 +149,45 @@ namespace ScreenOverlayManager.Model
         /// <summary>
         /// Rechecks the position of the window described by this ParentInfo.
         /// </summary>
-        /// <param name="notify">Controls whether the OnPropertyChanged event is
+        /// <param name="notify">Controls whether the PropertyChanged event is
         /// raised for Position on successful update.</param>
         /// <returns>The most recent position information of the window described by this
         /// ParentInfo.</returns>
         public Point CheckPosition(bool notify)
         {
-            if(TitleSpecified)
-            {
-                if (!Exists) 
-                    if(CheckHandle() == IntPtr.Zero) return Position; 
+            ParentInfo.Rect bounds = new ParentInfo.Rect();
 
-                ParentInfo.Rect bounds = new ParentInfo.Rect();
-                if(GetWindowRect(_Handle, ref bounds))
-                {
-                    this._Position.X = bounds.Left;
-                    this._Position.Y = bounds.Top;
-                    if (notify) OnPropertyChanged("Position");
-                }
+            if(Exists && GetWindowRect(_Handle, ref bounds))
+            {
+                _Position.X = bounds.Left;
+                _Position.Y = bounds.Top;
             }
-            
+            else
+            {
+                _Position.X = 0;
+                _Position.Y = 0;
+                CheckHandle(); // Can try again on the next pass
+            }
+
+            if (notify) OnPropertyChanged("Position");
             return Position;
+
+            //if(TitleSpecified)
+            //{
+            //    if (!Exists)
+            //        if (CheckHandle() == IntPtr.Zero)
+            //            return Position;
+
+            //    ParentInfo.Rect bounds = new ParentInfo.Rect();
+            //    if(GetWindowRect(_Handle, ref bounds))
+            //    {
+            //        this._Position.X = bounds.Left;
+            //        this._Position.Y = bounds.Top;
+            //        if (notify) OnPropertyChanged("Position");
+            //    }
+            //}
+            
+            //return Position;
         }
 
         protected IntPtr CheckHandle()
@@ -221,13 +239,7 @@ namespace ScreenOverlayManager.Model
         /// child_RelativePosition.</returns>
         public Point GetChildAbsolutePosition(Vector child_RelativePosition)
         {
-            CheckPosition(false);
-
-            return new Point
-            (
-                this.X + child_RelativePosition.X,
-                this.Y + child_RelativePosition.Y
-            );
+            return GetChildAbsolutePosition((Point)child_RelativePosition);
         }
 
         /// <summary>

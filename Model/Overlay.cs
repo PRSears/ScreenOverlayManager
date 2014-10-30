@@ -10,6 +10,12 @@ namespace ScreenOverlayManager.Model
 {
     public sealed class Overlay : INotifyPropertyChanged
     {
+        /// <summary>
+        /// Overlay position shouuld not change if NewPosition.X is less than 
+        /// this value.
+        /// </summary>
+        private static int X_CutoffMin = -10000;
+
         public double Thickness
         {
             get
@@ -109,10 +115,18 @@ namespace ScreenOverlayManager.Model
         {
             get
             {
-                if (ParentInfo.State == ParentInfo.ParentState.Open)
-                    return this.Position - ParentInfo.Position;
-                else 
+                if (ParentInfo.State == ParentInfo.ParentState.Minimized)
+                {
                     return new Vector(X, Y);
+                }
+                else if (ParentInfo.State == ParentInfo.ParentState.NotFound)
+                {
+                    return this.Position - ParentInfo.Position;
+                }
+                else
+                {
+                    return this.Position - ParentInfo.Position;
+                }
             }
         }
 
@@ -606,7 +620,7 @@ namespace ScreenOverlayManager.Model
             else
                 newAbsPos = (Point)newOffset;
 
-            if (!newAbsPos.Equals(this.Position))
+            if (!newAbsPos.Equals(this.Position) && newAbsPos.X > X_CutoffMin)
             {
                 if (quiet)
                 {

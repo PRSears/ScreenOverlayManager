@@ -347,7 +347,7 @@ namespace ScreenOverlayManager.ViewModel
             {
                 try
                 {
-                    Overlays.Add(new Checkable<Overlay>(OverlayFromFile(dialog.FileName)));
+                    OpenExistingOverlay(OverlayFromFile(dialog.FileName));
                 }
                 catch
                 {
@@ -521,7 +521,7 @@ namespace ScreenOverlayManager.ViewModel
                         string.Format(OverlayNameFormat, i.ToString("D3"))
                     );
 
-                    SaveOverlay(Overlays[i - 1].Resource, filename);
+                    SaveOverlay(Overlays[i - 1].Resource, filename, false);
                 }
 
                 UnsavedChanges = false; // successfully saved everything
@@ -537,7 +537,7 @@ namespace ScreenOverlayManager.ViewModel
             }
         }
 
-        protected void SaveOverlay(Overlay overlay, string fullPath)
+        protected void SaveOverlay(Overlay overlay, string fullPath, bool warn = true)
         {
             StreamWriter stream = null;
             try
@@ -547,6 +547,7 @@ namespace ScreenOverlayManager.ViewModel
             }
             catch (Exception e)
             {
+                if(warn)
                 System.Windows.Forms.MessageBox.Show
                 (
                     string.Format("A problem was encountered while saving the current " +
