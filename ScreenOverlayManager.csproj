@@ -84,6 +84,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\Overlay.cs" />
+    <Compile Include="Model\ParentInfo.cs" />
     <Compile Include="ViewModel\AppConfigViewModel.cs" />
     <Compile Include="ViewModel\OverlayViewModel.cs" />
     <Compile Include="View\AppConfigView.xaml.cs">

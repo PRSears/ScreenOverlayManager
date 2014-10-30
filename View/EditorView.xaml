@@ -80,7 +80,7 @@
                      FontSize="10"
                      FontWeight="Normal"/>
 
-            <Label Content="Relative position" 
+            <Label Content="Absolute position" 
                    Style="{StaticResource PropertyLabel}"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox x:Name="xCoordBox" 
@@ -105,7 +105,7 @@
             <Label Content="Parent window title" 
                    Style="{StaticResource PropertyLabel}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBox Text="{Binding EditingOverlay.ParentTitle, UpdateSourceTrigger=PropertyChanged}" 
+                <TextBox Text="{Binding EditingOverlay.ParentTitle, UpdateSourceTrigger=LostFocus}" 
                          Style="{StaticResource TitleTextBox}"/>
             </StackPanel>
 

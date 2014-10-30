@@ -4,10 +4,11 @@ using System.ComponentModel;
 using System.Windows.Media;
 using System.Xml.Serialization;
 using Point = System.Windows.Point;
+using Vector = System.Windows.Vector;
 
 namespace ScreenOverlayManager.Model
 {
-    public sealed class Overlay
+    public sealed class Overlay : INotifyPropertyChanged
     {
         public double Thickness
         {
@@ -48,6 +49,11 @@ namespace ScreenOverlayManager.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the X-Coordinate of the absolute position of this Overlay.
+        /// Use this.MoveTo() if you're changing the position of the overlay. this.MoveTo()
+        /// handles relative positioning when neccessary.
+        /// </summary>
         public double X
         {
             get
@@ -61,6 +67,11 @@ namespace ScreenOverlayManager.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the Y-Coordinate of the absolute position of this Overlay.
+        /// Use this.MoveTo() if you're changing the position of the overlay. this.MoveTo()
+        /// handles relative positioning when neccessary.
+        /// </summary>
         public double Y
         {
             get
@@ -72,6 +83,44 @@ namespace ScreenOverlayManager.Model
                 _Y = value;
                 OnPropertyChanged("Y");
             }
+        }
+
+        [XmlIgnore]
+        public Point Position
+        {
+            get
+            {
+                return new Point(X, Y);
+            }
+            set
+            {
+                this.X = value.X;
+                this.Y = value.Y;
+            }
+        }
+
+        /// <summary>
+        /// Gets the vector offset of this overlay from a parent window.
+        /// If no parent is specified (or the window isn't found) the offset is 
+        /// relative to the desktop (0, 0). 
+        /// </summary>
+        [XmlIgnore]
+        public Vector OffsetFromParent
+        {
+            get
+            {
+                if (ParentInfo.State == ParentInfo.ParentState.Open)
+                    return this.Position - ParentInfo.Position;
+                else 
+                    return new Vector(X, Y);
+            }
+        }
+
+        [XmlIgnore]
+        public ParentInfo ParentInfo
+        {
+            get;
+            set;
         }
 
         [XmlIgnore]
@@ -270,11 +319,11 @@ namespace ScreenOverlayManager.Model
         {
             get
             {
-                return _ParentTitle;
+                return this.ParentInfo.WindowTitle;
             }
             set
             {
-                _ParentTitle = value;
+                this.ParentInfo.WindowTitle = value;
                 OnPropertyChanged("ParentTitle");
             }
         }
@@ -325,9 +374,9 @@ namespace ScreenOverlayManager.Model
         {
             get
             {
-                return !string.IsNullOrWhiteSpace(this.ParentTitle);
+                return ParentInfo.TitleSpecified;
             }
-        } 
+        }
         
         // can be ignored since the overlay will always be frozen when it first loads
         [XmlIgnore]
@@ -339,8 +388,15 @@ namespace ScreenOverlayManager.Model
             }
             set
             {
+                bool prev = _Draggable;
+
                 _Draggable = value;
                 OnPropertyChanged("Draggable");
+
+                if (prev == false && _Draggable == true)
+                    OnDraggingStarted();
+                else if (prev == true && _Draggable == false)
+                    OnDraggingEnded();
             }
         }
 
@@ -348,7 +404,7 @@ namespace ScreenOverlayManager.Model
 
         private string  _Name;
 
-        private string  _ParentTitle;
+        //private string  _ParentTitle;
 
         private double  _Y;
 
@@ -374,7 +430,11 @@ namespace ScreenOverlayManager.Model
 
         #endregion
 
-        public Overlay() { IsVisible = true; }
+        public Overlay() 
+        { 
+            IsVisible = true;
+            ParentInfo = new ParentInfo();
+        }
 
         public Overlay
         (
@@ -397,7 +457,8 @@ namespace ScreenOverlayManager.Model
             this._Crosshair         = drawCrosshair;
             this._PrimaryColor      = primaryColor;
             this._SecondaryColor    = secondaryColor;
-            this._ParentTitle       = parentWindow;
+
+            this.ParentInfo.WindowTitle = parentWindow;
         }
 
         public Overlay
@@ -412,15 +473,16 @@ namespace ScreenOverlayManager.Model
             string parentWindow = ""
         ) : this()
         {
-            this._X = position.X;
-            this._Y = position.Y;
-            this._Width = width;
-            this._Height = height;
-            this._Thickness = strokeThickness;
-            this._Crosshair = drawCrosshair;
-            this._PrimaryColor = primaryColor;
-            this._SecondaryColor = secondaryColor;
-            this._ParentTitle = parentWindow;
+            this._X                 = position.X;
+            this._Y                 = position.Y;
+            this._Width             = width;
+            this._Height            = height;
+            this._Thickness         = strokeThickness;
+            this._Crosshair         = drawCrosshair;
+            this._PrimaryColor      = primaryColor;
+            this._SecondaryColor    = secondaryColor;
+
+            this.ParentInfo.WindowTitle = parentWindow;
         }
 
         /// <summary>
@@ -505,6 +567,60 @@ namespace ScreenOverlayManager.Model
             this.IsVisible      = b.IsVisible;
         }
 
+        /// <summary>
+        /// Changes the X and Y coordinates of this overlay. If a ParentTitle has been specified - 
+        /// and the parent exists - the Overlay will be positioned relative to the parent.
+        /// </summary>
+        /// <param name="x">New X coordinate. If a ParentTitle has been specified - 
+        /// and the parent exists - the Overlay will be positioned relative to the parent.</param>
+        /// <param name="y">New Y coordinate. If a ParentTitle has been specified - 
+        /// and the parent exists - the Overlay will be positioned relative to the parent.</param>
+        /// <param name="relative">
+        /// When true the move will attempt to be relative to the parent (if present).
+        /// </param>
+        /// <param name="quiet">When true the OnPropertyChanged event is not
+        /// raised for this.X or this.Y.</param>
+        public void MoveTo(double x, double y, bool relative, bool quiet = false)
+        {
+            this.MoveTo(new Vector(X, Y), relative, quiet);
+        }
+
+        /// <summary>
+        /// Changes the X and Y coordinates of this overlay. If a ParentTitle has been specified - 
+        /// and the parent exists - the Overlay will be positioned relative to the parent.
+        /// </summary>
+        /// <param name="newOffset">
+        /// A vector representing the difference between the parent window (or Point(0, 0) if not 
+        /// specified) and the new position of the overlay.
+        /// </param>
+        /// <param name="relative">
+        /// When true the move will attempt to be relative to the parent (if present).</param>
+        /// <param name="quiet">When true the OnPropertyChanged event is not
+        /// raised for this.X or this.Y.</param>
+        public void MoveTo(Vector newOffset, bool relative, bool quiet = false)
+        {
+            Point newAbsPos;
+
+            if (relative && ParentInfo.State == ParentInfo.ParentState.Open)
+                newAbsPos = ParentInfo.GetChildAbsolutePosition(newOffset);
+            else
+                newAbsPos = (Point)newOffset;
+
+            if (!newAbsPos.Equals(this.Position))
+            {
+                if (quiet)
+                {
+                    this._X = newAbsPos.X;
+                    this._Y = newAbsPos.Y;
+                }
+                else
+                {
+                    this.X = newAbsPos.X;
+                    this.Y = newAbsPos.Y;
+                }
+            }
+        }
+
         public override string ToString()
         {
             return string.Format
@@ -539,9 +655,9 @@ namespace ScreenOverlayManager.Model
             else return false;
         }
 
-        #region INotifyPropertyChanged Members
-
         public event PropertyChangedEventHandler PropertyChanged;
+        public event DraggingStartEventHandler DraggingStarted;
+        public event DraggingEndEventHandler DraggingEnded;
 
         private void OnPropertyChanged(string propertyName)
         {
@@ -551,6 +667,30 @@ namespace ScreenOverlayManager.Model
             {
                 handler(this, new PropertyChangedEventArgs(propertyName));
             }
+        }
+
+        private void OnDraggingStarted()
+        {
+            DraggingStartEventHandler handler = DraggingStarted;
+
+            if(handler != null)
+            {
+                handler(this);
+            }
+            Extender.Debugging.Debug.WriteMessage("OnDraggingStarted.",
+                Properties.Settings.Default.Debugging);
+        }
+
+        private void OnDraggingEnded()
+        {
+            DraggingEndEventHandler handler = DraggingEnded;
+
+            if(handler != null)
+            {
+                handler(this);
+            }
+            Extender.Debugging.Debug.WriteMessage("OnDraggingEnded.",
+                Properties.Settings.Default.Debugging);
         }
 
         private void DimensionChanged()
@@ -565,7 +705,8 @@ namespace ScreenOverlayManager.Model
             OnPropertyChanged("InnerWidth");
             OnPropertyChanged("InnerHeight");
         }
-
-        #endregion
     }
+
+    public delegate void DraggingStartEventHandler(object sender);
+    public delegate void DraggingEndEventHandler(object sender);
 }

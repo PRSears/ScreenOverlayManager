@@ -7,9 +7,6 @@ using System.Windows.Input;
 
 namespace ScreenOverlayManager
 {
-    // TODOh Implement relative positioning to parent window (matching 'ParentTitle')
-    // TODO Use a visual queue when a parent window has been specified, and not found.
-
     /// <summary>
     /// Interaction logic for OverlayView.xaml
     /// </summary>
@@ -30,7 +27,7 @@ namespace ScreenOverlayManager
             }
         }
 
-        private bool JustMoved { get; set; }
+        private System.Windows.Threading.DispatcherTimer CheckParentTimer;
 
         public OverlayView()
         {
@@ -52,14 +49,39 @@ namespace ScreenOverlayManager
         {
             this.ViewModel.RegisterCloseAction(() => this.Close());
             this.ViewModel.Overlay.PropertyChanged += ViewModel_PropertyChanged;
+            this.ViewModel.Overlay.DraggingStarted += Overlay_DraggingStarted;
+            this.ViewModel.Overlay.DraggingEnded   += Overlay_DraggingEnded;
 
-            this.Left   = ViewModel.Overlay.X;
-            this.Top    = ViewModel.Overlay.Y;
+            this.CheckParentTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = new TimeSpan(0, 0, 0, 0, UpdateInterval),
+                IsEnabled = !string.IsNullOrWhiteSpace(this.ViewModel.Overlay.ParentTitle)            
+            };
+            this.CheckParentTimer.Tick += (s, e) => UpdateOverlayPosition();
+
+            this.SyncWindowLocation();
             this.Width  = ViewModel.Overlay.Width;
             this.Height = ViewModel.Overlay.Height;
 
-            //var trayMenu = (ContextMenu)this.Resources["SysTrayMenu"];
-            //trayMenu.Items.Add();
+        }
+
+        private void Overlay_DraggingStarted(object sender)
+        {
+            this.CheckParentTimer.IsEnabled = false;
+
+            this.ActivateHitTest();
+        }
+
+        private void Overlay_DraggingEnded(object sender)
+        {
+            this.DeactivateHitTest();
+
+            Point winPos        = new Point(this.Left, this.Top);
+            Vector newOffset    = ViewModel.Overlay.ParentInfo.GetChildOffset(winPos);
+
+            ViewModel.Overlay.MoveTo(newOffset, true);
+
+            CheckParentTimer.IsEnabled = true;
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -74,19 +96,19 @@ namespace ScreenOverlayManager
                 DEBUG
             );
 
-            if (e.PropertyName.Equals("Draggable"))
-                this.UpdateDraggable();
-            else if (e.PropertyName.Equals("X"))
-                this.Left = ViewModel.Overlay.X;
-            else if (e.PropertyName.Equals("Y"))
-                this.Top = ViewModel.Overlay.Y;
-            else if (e.PropertyName.Equals("Width"))
-                this.Width = ViewModel.Overlay.Width;
-            else if (e.PropertyName.Equals("Height"))
-                this.Height = ViewModel.Overlay.Height;
+            if      (e.PropertyName.Equals("X")) this.SyncWindowLocation();
+            else if (e.PropertyName.Equals("Y")) this.SyncWindowLocation();
+            else if (e.PropertyName.Equals("ParentTitle")) this.SyncWindowLocation();
+            else if (e.PropertyName.Equals("Width")) this.Width = ViewModel.Overlay.Width;
+            else if (e.PropertyName.Equals("Height")) this.Height = ViewModel.Overlay.Height;
 
             this.OverlayCanvas.InvalidateVisual();
         }
+
+        // TODOh (Debug) find a way to have the overlay behave the same when minimizing and 
+        //       closing the parent. Currently closing the parent keeps the window position static, 
+        //       whereas minimizing switches positioning to be relative the desktop (0, 0). 
+        //       I think I should pick one or the other for consistant behaviour.
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
@@ -95,32 +117,97 @@ namespace ScreenOverlayManager
             if (e.ChangedButton == MouseButton.Left)
             {
                 this.DragMove();
-                this.JustMoved = true;
             }
         }
 
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
-            this.UpdateDraggable();
+            this.DeactivateHitTest();
         }
 
-        protected void UpdateDraggable()
+        protected void SyncWindowLocation()
         {
-            if (JustMoved && this.ViewModel != null)
-            {
-                this.ViewModel.Overlay.X = this.Left;
-                this.ViewModel.Overlay.Y = this.Top;
+            // no data to sync to 
+            if (ViewModel == null) return;
+            // Don't want to move the window around when the user is trying to place it
+            if (ViewModel.Overlay.Draggable) return;
 
-                JustMoved = !JustMoved;
-            }
 
-            if (ViewModel.Overlay.Draggable)
-                this.ActivateHitTest();
-            else
-                this.DeactivateHitTest();
+            this.Left   = ViewModel.Overlay.X;
+            this.Top    = ViewModel.Overlay.Y;
         }
-        
+
+        protected void UpdateOverlayPosition()
+        {
+            // Store the overlay's current offset from parent
+            Vector currentOffset = ViewModel.Overlay.OffsetFromParent;
+            // Recheck parent position
+            ViewModel.Overlay.ParentInfo.CheckPosition(true);
+            // Move the overlay to its new position
+            ViewModel.Overlay.MoveTo(currentOffset, true);
+        }
+
+        #region To delete...
+        //protected void UpdateDraggable()
+        //{
+        //    if (JustMoved && this.ViewModel != null)
+        //    {
+        //        if (string.IsNullOrWhiteSpace(ViewModel.Overlay.ParentTitle))
+        //        {
+        //            // No parent specified
+        //            this.ViewModel.Overlay.Move(this.Left, this.Top, true);
+        //            //this.ViewModel.Overlay.X = this.Left;
+        //            //this.ViewModel.Overlay.Y = this.Top;
+        //        }
+        //        else
+        //        {
+        //            // Parent is specified
+        //            Point parentPos = GetParentWindowPosition();
+        //            this.ViewModel.Overlay.Move
+        //            (
+        //                this.Left - parentPos.X,
+        //                this.Top - parentPos.Y,
+        //                true
+        //            );
+        //            //this.ViewModel.Overlay.X = this.Left - parentPos.X;
+        //            //this.ViewModel.Overlay.Y = this.Top  - parentPos.Y;
+        //        }
+
+        //        JustMoved = !JustMoved;
+        //    }
+
+        //    if (ViewModel.Overlay.Draggable)
+        //        this.ActivateHitTest();
+        //    else
+        //        this.DeactivateHitTest();
+        //}
+
+        //protected void PlaceWindow()
+        //{
+        //    if (ViewModel == null) return;
+        //    // Don't want to move the window around when the user is trying to place it
+        //    if (ViewModel.Overlay.Draggable) return; 
+
+        //    if (!string.IsNullOrWhiteSpace(ViewModel.Overlay.ParentTitle))
+        //    {
+               
+        //        Point parentPos = GetParentWindowPosition();
+        //        this.Left = parentPos.X + ViewModel.Overlay.X;
+        //        this.Top  = parentPos.Y + ViewModel.Overlay.Y;
+
+        //        this.CheckParentTimer.IsEnabled = true;
+        //    }
+        //    else
+        //    {
+        //        this.Left = ViewModel.Overlay.X;
+        //        this.Top  = ViewModel.Overlay.Y;
+
+        //        this.CheckParentTimer.IsEnabled = false;
+        //    }
+        //}
+        #endregion
+
         /// <summary>
         /// Uses a WindowsInteropHelper to get the Handle of this WPF Window. 
         /// [Read-Only]
@@ -132,6 +219,7 @@ namespace ScreenOverlayManager
                 return new System.Windows.Interop.WindowInteropHelper(this).Handle;
             }
         }
+
 
         protected void DeactivateHitTest()
         {
@@ -178,6 +266,14 @@ namespace ScreenOverlayManager
         [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
         public static extern int SetWindowLong(IntPtr hWnd, GWL nIndex, int dwNewLong);
         #endregion
+
+        private int UpdateInterval
+        {
+            get
+            {
+                return Properties.Settings.Default.UpdateInterval;
+            }
+        }
 
         private bool DEBUG
         {

@@ -29,7 +29,6 @@ namespace ScreenOverlayManager.ViewModel
                 OnPropertyChanged("ConfiguratorVisible");
             }
         }
-
         public bool ConfiguratorShowInTaskbar
         {
             get
@@ -42,7 +41,6 @@ namespace ScreenOverlayManager.ViewModel
                 OnPropertyChanged("ConfiguratorShowInTaskbar");
             }
         }
-
         /// <summary>
         /// While AppIsClosing is false OnClosing of the View will be cancelled.
         /// Automatically toggled on by ExitAppCommand.
@@ -52,11 +50,15 @@ namespace ScreenOverlayManager.ViewModel
             get; 
             protected set; 
         }
-
         public bool RequestingFocus
         {
             get;
             set;
+        }
+        public bool UnsavedChanges
+        {
+            get;
+            protected set;
         }
 
         public ObservableCollection<Checkable<Overlay>> Overlays
@@ -214,6 +216,7 @@ namespace ScreenOverlayManager.ViewModel
             (
                 () =>
                 {
+                    this.PrepareOverlaysForExit();
                     this.SaveState();
                     this.AppIsClosing = true;
                     this.CloseCommand.Execute(null);
@@ -227,6 +230,21 @@ namespace ScreenOverlayManager.ViewModel
 
             RequestingFocus = true;
             OnPropertyChanged("RequestingFocus");
+        }
+
+        /// <summary>
+        /// Converts relative position to absolute to preserve positioning for saving.
+        /// </summary>
+        protected void PrepareOverlaysForExit()
+        {
+            foreach(var o in _Overlays.Select(co => co.Resource))
+            {
+                if(o.ParentInfo.State == ParentInfo.ParentState.Open)
+                {
+                    System.Windows.Vector offset = o.OffsetFromParent;
+                    o.Position = (System.Windows.Point)offset;
+                }
+            }
         }
 
         public void CreateNewOverlay(bool openEditor)
@@ -294,7 +312,11 @@ namespace ScreenOverlayManager.ViewModel
 
         private void Overlays_SelectionChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            Debug.WriteMessage(string.Format("AppConfigViewModel.Overlays_SelectionChanged (Checkable<Overlay>.{0})", e.PropertyName), DEBUG);
+            Debug.WriteMessage(string.Format
+                (
+                    "AppConfigViewModel.Overlays_SelectionChanged (Checkable<Overlay>.{0})", 
+                    e.PropertyName
+                ), DEBUG);
 
             // If the selected item changes we need to refresh the context-sensitive buttons' text
             OnPropertyChanged("ShowHideButtonText");
@@ -303,6 +325,7 @@ namespace ScreenOverlayManager.ViewModel
 
         private void Overlay_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            UnsavedChanges = true;
             OnPropertyChanged("Overlays");
 
             if (e.PropertyName.Equals("IsVisible"))
@@ -445,6 +468,9 @@ namespace ScreenOverlayManager.ViewModel
 
         protected void LoadState()
         {
+            if (!Directory.Exists(Properties.Settings.Default.SavedDirectory))
+                return;
+
             foreach(string file in Directory.GetFiles(Properties.Settings.Default.SavedDirectory))
             {
                 try
@@ -454,10 +480,10 @@ namespace ScreenOverlayManager.ViewModel
                 catch
                 {
                     Debug.WriteMessage
-                        (
-                            string.Format(@"File at ""{0}"" could not be loaded.", file), 
-                            DEBUG
-                        );
+                    (
+                        string.Format(@"File at ""{0}"" could not be loaded.", file), 
+                        DEBUG
+                    );
                 }
             }
         }
@@ -475,6 +501,8 @@ namespace ScreenOverlayManager.ViewModel
             //        File.Delete(file);
             //    }
             //}
+            if (!UnsavedChanges) return; // Nothing has changed, so no need to save.
+
             Debug.WriteMessage("Saving Overlay list state.", DEBUG);
 
             try
@@ -494,6 +522,8 @@ namespace ScreenOverlayManager.ViewModel
 
                     SaveOverlay(Overlays[i - 1].Resource, filename);
                 }
+
+                UnsavedChanges = false; // successfully saved everything
             }
             catch(Exception e)
             {
@@ -517,12 +547,12 @@ namespace ScreenOverlayManager.ViewModel
             catch (Exception e)
             {
                 System.Windows.Forms.MessageBox.Show
-                    (
-                        string.Format("A problem was encountered while saving the current " +
-                                      "overlay states.\n\n{0}\nFor {1}",
-                                      Extender.Debugging.ExceptionTools.CreateExceptionText(e, false),
-                                      overlay.ToString())
-                    );
+                (
+                    string.Format("A problem was encountered while saving the current " +
+                                    "overlay states.\n\n{0}\nFor {1}",
+                                    Extender.Debugging.ExceptionTools.CreateExceptionText(e, false),
+                                    overlay.ToString())
+                );
 
                 if (DEBUG) Extender.Debugging.ExceptionTools.WriteExceptionText(e, true);
             }

@@ -59,6 +59,8 @@ namespace ScreenOverlayManager.ViewModel
             };
         }
 
+        // TODO Debug why the fuck the blue channel changes to 4 if it's set to 0 upon load
+
         public EditorViewModel() : this(new Overlay()) 
         {
             this._EditingOverlay.LoadDefaults();

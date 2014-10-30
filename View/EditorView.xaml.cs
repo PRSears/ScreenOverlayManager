@@ -42,26 +42,6 @@ namespace ScreenOverlayManager.View
         {
             InitializeComponent();
             ViewModel.RegisterCloseAction(this.Close);
-
-            ViewModel.EditingOverlay.PropertyChanged += EditingOverlay_PropertyChanged;
-        }
-
-        private void EditingOverlay_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            // This shouldn't be neccessary, but the text boxes weren't updating even though
-            // the binding mode is TwoWay and UpdateSourceTrigger is set to PropertyChanged.
-            // Clearly PropertyChanged for X and Y is getting fired... Why the fuck aren't the
-            // textboxes noticing?
-
-            if (e.PropertyName.Equals("X"))
-                BindingOperations.GetBindingExpression(xCoordBox, TextBox.TextProperty).UpdateTarget();
-            else if (e.PropertyName.Equals("Y"))
-                BindingOperations.GetBindingExpression(yCoordBox, TextBox.TextProperty).UpdateTarget();
-            else if(e.PropertyName.Equals("Draggable"))
-            {
-                BindingOperations.GetBindingExpression(xCoordBox, TextBox.IsEnabledProperty).UpdateTarget();
-                BindingOperations.GetBindingExpression(yCoordBox, TextBox.IsEnabledProperty).UpdateTarget();
-            }
         }
     }
 }
