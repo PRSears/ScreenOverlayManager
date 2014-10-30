@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="UpdateInterval" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">15</Value>
+      <Value Profile="(Default)">50</Value>
     </Setting>
     <Setting Name="SavedDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)">overlays</Value>

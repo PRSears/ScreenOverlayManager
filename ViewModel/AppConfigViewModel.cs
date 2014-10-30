@@ -271,7 +271,8 @@ namespace ScreenOverlayManager.ViewModel
             }
             catch
             {
-                Debug.WriteMessage("Failed to subscribe to new Checkable<Overlay>'s PropertyChanged event.", DEBUG, "warn");
+                Debug.WriteMessage("Failed to subscribe to new Checkable<Overlay>'s PropertyChanged event.", 
+                    DEBUG, "warn");
             }
 
             WindowManager.OpenWindow(new OverlayView(overlay), true);

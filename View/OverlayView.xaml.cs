@@ -76,8 +76,8 @@ namespace ScreenOverlayManager
         {
             this.DeactivateHitTest();
 
-            Point winPos        = new Point(this.Left, this.Top);
-            Vector newOffset    = ViewModel.Overlay.ParentInfo.GetChildOffset(winPos);
+            Point   winPos      = new Point(this.Left, this.Top);
+            Vector  newOffset   = ViewModel.Overlay.ParentInfo.GetChildOffset(winPos);
 
             ViewModel.Overlay.MoveTo(newOffset, true);
 
@@ -98,9 +98,15 @@ namespace ScreenOverlayManager
 
             if      (e.PropertyName.Equals("X")) this.SyncWindowLocation();
             else if (e.PropertyName.Equals("Y")) this.SyncWindowLocation();
-            else if (e.PropertyName.Equals("ParentTitle")) this.SyncWindowLocation();
             else if (e.PropertyName.Equals("Width")) this.Width = ViewModel.Overlay.Width;
             else if (e.PropertyName.Equals("Height")) this.Height = ViewModel.Overlay.Height;
+            else if (e.PropertyName.Equals("ParentTitle"))
+            {
+                this.CheckParentTimer.IsEnabled = ViewModel.Overlay.ParentInfo.TitleSpecified ?
+                    true : false;
+
+                this.SyncWindowLocation();
+            }
 
             this.OverlayCanvas.InvalidateVisual();
         }

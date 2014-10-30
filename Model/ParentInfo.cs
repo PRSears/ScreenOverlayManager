@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 
@@ -26,6 +28,9 @@ namespace ScreenOverlayManager.Model
             {
                 _WindowTitle = value;
                 OnPropertyChanged("WindowTitle");
+
+                // will force a re-check next time Handle's getter is called
+                Handle = IntPtr.Zero; 
             }
         }
 
@@ -36,7 +41,7 @@ namespace ScreenOverlayManager.Model
         {
             get
             {
-                return Handle != IntPtr.Zero;
+                return IsWindow(_Handle);
             }
         }
 
@@ -112,6 +117,7 @@ namespace ScreenOverlayManager.Model
 
         private Point   _Position;
         private string  _WindowTitle;
+        private IntPtr  _Handle;
 
         /// <summary>
         /// Gets the handle of the window described by this ParentInfo.
@@ -120,9 +126,15 @@ namespace ScreenOverlayManager.Model
         {
             get
             {
-                if (!TitleSpecified) return IntPtr.Zero;
+                if (!IsWindow(_Handle))
+                    CheckHandle();
 
-                return FindWindow(null, WindowTitle);
+                return _Handle;
+            }
+            private set
+            {
+                _Handle = value;
+                OnPropertyChanged("Handle");
             }
         }
 
@@ -145,20 +157,39 @@ namespace ScreenOverlayManager.Model
         {
             if(TitleSpecified)
             {
-                IntPtr hWnd = this.Handle;
-                if(hWnd != null)
+                if (!Exists) 
+                    if(CheckHandle() == IntPtr.Zero) return Position; 
+
+                ParentInfo.Rect bounds = new ParentInfo.Rect();
+                if(GetWindowRect(_Handle, ref bounds))
                 {
-                    ParentInfo.Rect bounds = new ParentInfo.Rect();
-                    if(GetWindowRect(hWnd, ref bounds))
-                    {
-                        this._Position.X = bounds.Left;
-                        this._Position.Y = bounds.Top;
-                        if (notify) OnPropertyChanged("Position");
-                    }
+                    this._Position.X = bounds.Left;
+                    this._Position.Y = bounds.Top;
+                    if (notify) OnPropertyChanged("Position");
                 }
             }
             
             return Position;
+        }
+
+        protected IntPtr CheckHandle()
+        {
+            if (!TitleSpecified) return IntPtr.Zero;
+
+            IntPtr hWnd = FindWindow(null, WindowTitle);
+
+            if (hWnd == IntPtr.Zero) // no exact match
+            {
+                var proc = Process.GetProcesses()
+                                  .FirstOrDefault(p => p.MainWindowTitle.Contains(WindowTitle));
+
+                if (proc == default(Process)) hWnd = IntPtr.Zero;
+                else hWnd = proc.MainWindowHandle;
+            }
+
+            Handle = hWnd;
+
+            return _Handle;
         }
 
         /// <summary>
@@ -234,13 +265,14 @@ namespace ScreenOverlayManager.Model
             _Position.Y = y;
         }
 
-        // TODOh Find a way to search windows without an exact match
-
         [DllImport("user32.dll", EntryPoint = "FindWindow", CharSet = CharSet.Ansi)]
         private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
         [DllImport("user32.dll")]
         private static extern bool GetWindowRect(IntPtr hWnd, ref ParentInfo.Rect rectangle);
+
+        [DllImport("user32.dll")]
+        private static extern bool IsWindow(IntPtr hWnd);
 
         private struct Rect
         {
