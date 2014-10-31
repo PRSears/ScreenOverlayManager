@@ -382,16 +382,7 @@ namespace ScreenOverlayManager.Model
                 DrawCrosshair = (value.Equals(System.Windows.Visibility.Visible));
             }
         }
-
-        [XmlIgnore]
-        public bool IsRelativePositioning
-        {
-            get
-            {
-                return ParentInfo.TitleSpecified;
-            }
-        }
-        
+                
         // can be ignored since the overlay will always be frozen when it first loads
         [XmlIgnore]
         public bool Draggable
@@ -417,29 +408,16 @@ namespace ScreenOverlayManager.Model
         #region Boxed properties
 
         private string  _Name;
-
-        //private string  _ParentTitle;
-
         private double  _Y;
-
         private double  _X;
-
         private double  _Height;
-
         private double  _Width;
-
         private double  _Thickness;
-
         private bool    _Crosshair;
-
         private bool    _DrawBorder;
-
         private Color   _SecondaryColor;
-
         private Color   _PrimaryColor;
-
         private bool    _IsVisible;
-
         private bool    _Draggable;
 
         #endregion

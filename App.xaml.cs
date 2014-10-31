@@ -10,6 +10,7 @@ namespace ScreenOverlayManager
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            // TODO Redirect console output to logfile
         }
     }
 }

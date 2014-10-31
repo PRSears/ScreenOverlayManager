@@ -18,6 +18,9 @@ namespace ScreenOverlayManager.Model
 
         private static Point MinimizedPosition = new Point(-32000, -32000);
 
+        /// <summary>
+        /// Gets or sets the string used to search for matching window titles.
+        /// </summary>
         public string WindowTitle
         {
             get
@@ -30,7 +33,7 @@ namespace ScreenOverlayManager.Model
                 OnPropertyChanged("WindowTitle");
 
                 // will force a re-check next time Handle's getter is called
-                Handle = IntPtr.Zero; 
+                Handle = IntPtr.Zero;
             }
         }
 
@@ -73,6 +76,11 @@ namespace ScreenOverlayManager.Model
             }
         }
 
+        /// <summary>
+        /// Gets the most recently polled position of the Window described by this
+        /// ParentInfo object. The point (0, 0) is returned if no matching window was 
+        /// found.
+        /// </summary>
         public Point Position
         {
             get
@@ -89,6 +97,9 @@ namespace ScreenOverlayManager.Model
             }
         }
 
+        /// <summary>
+        /// Gets the X coordinate of this.Position.
+        /// </summary>
         public double X
         {
             get
@@ -102,6 +113,9 @@ namespace ScreenOverlayManager.Model
             }
         }
 
+        /// <summary>
+        /// Gets the Y coordinate of this.Position.
+        /// </summary>
         public double Y
         {
             get
@@ -171,23 +185,6 @@ namespace ScreenOverlayManager.Model
 
             if (notify) OnPropertyChanged("Position");
             return Position;
-
-            //if(TitleSpecified)
-            //{
-            //    if (!Exists)
-            //        if (CheckHandle() == IntPtr.Zero)
-            //            return Position;
-
-            //    ParentInfo.Rect bounds = new ParentInfo.Rect();
-            //    if(GetWindowRect(_Handle, ref bounds))
-            //    {
-            //        this._Position.X = bounds.Left;
-            //        this._Position.Y = bounds.Top;
-            //        if (notify) OnPropertyChanged("Position");
-            //    }
-            //}
-            
-            //return Position;
         }
 
         protected IntPtr CheckHandle()

@@ -190,5 +190,17 @@ namespace ScreenOverlayManager.Properties {
                 this["AutosaveTimer"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("debug_log.txt")]
+        public string LogfilePath {
+            get {
+                return ((string)(this["LogfilePath"]));
+            }
+            set {
+                this["LogfilePath"] = value;
+            }
+        }
     }
 }

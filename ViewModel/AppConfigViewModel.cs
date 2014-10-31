@@ -12,8 +12,6 @@ namespace ScreenOverlayManager.ViewModel
 {
     public class AppConfigViewModel : Extender.WPF.ViewModel
     {
-        // TODO Implement settings editor
-
         // TODO_ Make double clicking an overlay in the list open the editor for that item
         // TODO_ Add right-click context menu to overlay list for quick options
 
@@ -27,6 +25,13 @@ namespace ScreenOverlayManager.ViewModel
             {
                 _ConfiguratorVisible = value;
                 OnPropertyChanged("ConfiguratorVisible");
+            }
+        }
+        public bool SettingsEditorVisible
+        {
+            get
+            {
+                return WindowManager.WindowIsOpen(typeof(View.SettingsEditorView));
             }
         }
         public bool ConfiguratorShowInTaskbar
@@ -74,11 +79,13 @@ namespace ScreenOverlayManager.ViewModel
             }
         }
 
+        #region Boxed Properties
         private ObservableCollection<Checkable<Overlay>>    _Overlays;
         private bool                                        _ConfiguratorShowInTaskbar;
         private bool                                        _ConfiguratorVisible;
+        #endregion
 
-        private System.Windows.Threading.DispatcherTimer AutosaveTimer;            
+        private System.Windows.Threading.DispatcherTimer AutosaveTimer;
 
         public ICommand ImportCommand       { get; private set; }
         public ICommand ExportCommand       { get; private set; }
@@ -104,9 +111,13 @@ namespace ScreenOverlayManager.ViewModel
 
             this.Overlays       = new ObservableCollection<Checkable<Overlay>>();
             this.WindowManager  = new WindowManager();
+            this.WindowManager.WindowClosed += (s, t) =>
+            {
+                if (t == typeof(View.SettingsEditorView))
+                    OnPropertyChanged("SettingsEditorVisible");
+            };
 
             LoadState();
-
             InitRelayCommands();
 
             this.AutosaveTimer = new System.Windows.Threading.DispatcherTimer
@@ -160,7 +171,11 @@ namespace ScreenOverlayManager.ViewModel
 
             OpenSettingsCommand = new RelayCommand
             (
-                () => OpenSettingsDialog()
+                () =>
+                {
+                    WindowManager.OpenWindow(new View.SettingsEditorView());
+                    OnPropertyChanged("SettingsEditorVisible");
+                }
             );
 
             //
@@ -562,13 +577,6 @@ namespace ScreenOverlayManager.ViewModel
             {
                 stream.Dispose();
             }
-        }
-
-        protected void OpenSettingsDialog()
-        {
-            Debug.WriteMessage("Settings dialog called.", DEBUG);
-            
-            System.Windows.Forms.MessageBox.Show("Not yet implemented.");
         }
 
         #region //Settings.Settings aliases

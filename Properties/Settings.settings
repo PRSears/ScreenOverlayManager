@@ -44,5 +44,8 @@
     <Setting Name="AutosaveTimer" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">5000</Value>
     </Setting>
+    <Setting Name="LogfilePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">debug_log.txt</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -87,11 +87,15 @@
     <Compile Include="Model\ParentInfo.cs" />
     <Compile Include="ViewModel\AppConfigViewModel.cs" />
     <Compile Include="ViewModel\OverlayViewModel.cs" />
+    <Compile Include="ViewModel\SettingsEditorViewModel.cs" />
     <Compile Include="View\AppConfigView.xaml.cs">
       <DependentUpon>AppConfigView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\EditorView.xaml.cs">
       <DependentUpon>EditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\SettingsEditorView.xaml.cs">
+      <DependentUpon>SettingsEditorView.xaml</DependentUpon>
     </Compile>
     <Page Include="View\AppConfigView.xaml">
       <SubType>Designer</SubType>
@@ -111,6 +115,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="View\EditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\SettingsEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
