@@ -1,10 +1,12 @@
-﻿using ScreenOverlayManager.Properties;
+﻿using Extender.WPF;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using ScreenOverlayManager.Properties;
+using System.Windows.Input;
 
 namespace ScreenOverlayManager.ViewModel
 {
     public class SettingsEditorViewModel : Extender.WPF.ViewModel
     {
-        #region //Default settings aliases
         public int AutosaveTimer
         {
             get
@@ -229,17 +231,26 @@ namespace ScreenOverlayManager.ViewModel
                 OnPropertyChanged("UpdateInterval");
             }
         }
-        #endregion
 
-        #region //ICommands
-
-
-
-        #endregion
+        public ICommand BrowseSaveFolderCommand { get; private set; }
 
         public SettingsEditorViewModel()
         {
+            BrowseSaveFolderCommand = new RelayCommand
+            (
+                () =>
+                {
+                    var dialog = new CommonOpenFileDialog();
 
+                    dialog.IsFolderPicker = true;
+                    dialog.Title = "Select a folder for storing overlay states";
+
+                    CommonFileDialogResult r = dialog.ShowDialog();
+
+                    if (r == CommonFileDialogResult.Ok)
+                        this.SaveDirectory = dialog.FileName;
+                }
+            );
         }
     }
 }

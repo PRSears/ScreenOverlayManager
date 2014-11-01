@@ -131,6 +131,10 @@
                     FontWeight="{Binding ToggleDragButtonTextWeight}"
                     Command="{Binding ToggleDragCommand}"
                     Style="{StaticResource PickerButton}"/>
+            <Button Content="Center in screen"
+                    Command="{Binding CenterCommand}"
+                    Style="{StaticResource PickerButton}"
+                    Margin="10,32,0,0"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="0">

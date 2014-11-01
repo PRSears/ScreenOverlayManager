@@ -3,6 +3,7 @@ using Extender.WPF;
 using ScreenOverlayManager.Model;
 using System.Windows.Input;
 using FontWeights = System.Windows.FontWeights;
+using Screen = System.Windows.Forms.Screen;
 
 namespace ScreenOverlayManager.ViewModel
 {
@@ -12,7 +13,7 @@ namespace ScreenOverlayManager.ViewModel
         public ICommand ResetChangesCommand     { get; private set; }
         public ICommand FinishedEditingCommand  { get; private set; }
         public ICommand ToggleDragCommand       { get; private set; }
-
+        public ICommand CenterCommand           { get; private set; }
 
         public Overlay EditingOverlay
         {
@@ -31,10 +32,22 @@ namespace ScreenOverlayManager.ViewModel
 
         private Overlay InitialState { get; set; }
 
+        private System.Drawing.Point Location
+        {
+            get
+            {
+                return new System.Drawing.Point
+                (
+                    (int)System.Math.Round(EditingOverlay.X),
+                    (int)System.Math.Round(EditingOverlay.Y)
+                );
+            }
+        }
+        
         public EditorViewModel(Overlay overlayToEdit) 
         {
             this._EditingOverlay = overlayToEdit;
-            this.InitialState = this.EditingOverlay.Copy();
+            this.InitialState    = this.EditingOverlay.Copy();
 
             this.CancelCommand          = new RelayCommand(() => Cancel());
             this.ResetChangesCommand    = new RelayCommand(() => Reset(true));
@@ -45,6 +58,15 @@ namespace ScreenOverlayManager.ViewModel
                 () =>
                 {
                     return (EditingOverlay != null) && EditingOverlay.IsVisible;
+                }
+            );
+            this.CenterCommand = new RelayCommand
+            (
+                () =>
+                {
+                    System.Drawing.Point center = Screen.FromPoint(Location).Bounds.GetCenter();
+                    EditingOverlay.X = center.X - (EditingOverlay.Width / 2);
+                    EditingOverlay.Y = center.Y - (EditingOverlay.Height / 2);
                 }
             );
 
@@ -81,6 +103,8 @@ namespace ScreenOverlayManager.ViewModel
                 return EditingOverlay.Draggable ? FontWeights.Bold : FontWeights.Normal;
             }
         }
+
+        
 
         public bool IsCoordBoxEnabled
         {

@@ -148,67 +148,7 @@ namespace ScreenOverlayManager
             // Move the overlay to its new position
             ViewModel.Overlay.MoveTo(currentOffset, true);
         }
-
-        #region To delete...
-        //protected void UpdateDraggable()
-        //{
-        //    if (JustMoved && this.ViewModel != null)
-        //    {
-        //        if (string.IsNullOrWhiteSpace(ViewModel.Overlay.ParentTitle))
-        //        {
-        //            // No parent specified
-        //            this.ViewModel.Overlay.Move(this.Left, this.Top, true);
-        //            //this.ViewModel.Overlay.X = this.Left;
-        //            //this.ViewModel.Overlay.Y = this.Top;
-        //        }
-        //        else
-        //        {
-        //            // Parent is specified
-        //            Point parentPos = GetParentWindowPosition();
-        //            this.ViewModel.Overlay.Move
-        //            (
-        //                this.Left - parentPos.X,
-        //                this.Top - parentPos.Y,
-        //                true
-        //            );
-        //            //this.ViewModel.Overlay.X = this.Left - parentPos.X;
-        //            //this.ViewModel.Overlay.Y = this.Top  - parentPos.Y;
-        //        }
-
-        //        JustMoved = !JustMoved;
-        //    }
-
-        //    if (ViewModel.Overlay.Draggable)
-        //        this.ActivateHitTest();
-        //    else
-        //        this.DeactivateHitTest();
-        //}
-
-        //protected void PlaceWindow()
-        //{
-        //    if (ViewModel == null) return;
-        //    // Don't want to move the window around when the user is trying to place it
-        //    if (ViewModel.Overlay.Draggable) return; 
-
-        //    if (!string.IsNullOrWhiteSpace(ViewModel.Overlay.ParentTitle))
-        //    {
-               
-        //        Point parentPos = GetParentWindowPosition();
-        //        this.Left = parentPos.X + ViewModel.Overlay.X;
-        //        this.Top  = parentPos.Y + ViewModel.Overlay.Y;
-
-        //        this.CheckParentTimer.IsEnabled = true;
-        //    }
-        //    else
-        //    {
-        //        this.Left = ViewModel.Overlay.X;
-        //        this.Top  = ViewModel.Overlay.Y;
-
-        //        this.CheckParentTimer.IsEnabled = false;
-        //    }
-        //}
-        #endregion
-
+        
         /// <summary>
         /// Uses a WindowsInteropHelper to get the Handle of this WPF Window. 
         /// [Read-Only]
@@ -220,7 +160,6 @@ namespace ScreenOverlayManager
                 return new System.Windows.Interop.WindowInteropHelper(this).Handle;
             }
         }
-
 
         protected void DeactivateHitTest()
         {

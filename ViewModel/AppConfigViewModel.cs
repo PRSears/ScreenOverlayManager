@@ -12,9 +12,6 @@ namespace ScreenOverlayManager.ViewModel
 {
     public class AppConfigViewModel : Extender.WPF.ViewModel
     {
-        // TODO_ Make double clicking an overlay in the list open the editor for that item
-        // TODO_ Add right-click context menu to overlay list for quick options
-
         public bool ConfiguratorVisible
         {
             get
@@ -308,21 +305,25 @@ namespace ScreenOverlayManager.ViewModel
             {
                 //
                 // Removes the first listing in Overlays collection with a matching Overlay contained in it.
-                Debug.WriteMessage("Calling DeleteOverlay.", DEBUG);
-                Debug.WriteMessage
-                (
-                    Overlays.RemoveFirst(co => co.Resource.Equals(overlay)).ToString(),
-                    DEBUG
-                );
+                bool outcome = Overlays.RemoveFirst(co => co.Resource.Equals(overlay));
 
                 //
                 // Uses WindowManager to close the corresponding OverlayView window.
-                WindowManager.CloseChild
+                outcome &= WindowManager.CloseChild
                 (
                     WindowManager.Children.Where(w => w.GetType() == typeof(OverlayView))
                                           .Cast<OverlayView>()
                                           .FirstOrDefault(ov => ov.ViewModel.Overlay.Equals(overlay))
                 );
+
+                Debug.WriteMessage
+                (
+                    string.Format("DeleteOverlay {0} : {1}", overlay.Name, outcome.ToString()), 
+                    DEBUG
+                );
+
+                UnsavedChanges = true;
+                SaveState();
             }
         }
 
@@ -498,35 +499,25 @@ namespace ScreenOverlayManager.ViewModel
                     Debug.WriteMessage
                     (
                         string.Format(@"File at ""{0}"" could not be loaded.", file), 
-                        DEBUG
+                        DEBUG,
+                        "warn"
                     );
                 }
             }
         }
 
         public void SaveState()
-        { 
-            //// Ensure the directory exists
-            //if(!Directory.Exists(SavedOverlaysPath))
-            //    Directory.CreateDirectory(SavedOverlaysPath);
-            //// Empty the directory 
-            //if(!Directory.EnumerateFileSystemEntries(SavedOverlaysPath).Any())
-            //{
-            //    foreach(string file in Directory.EnumerateFiles(SavedOverlaysPath))
-            //    {
-            //        File.Delete(file);
-            //    }
-            //}
+        {
             if (!UnsavedChanges) return; // Nothing has changed, so no need to save.
 
             Debug.WriteMessage("Saving Overlay list state.", DEBUG);
 
             try
             {
-                if (Directory.Exists(SavedOverlaysPath))
-                    Directory.Delete(SavedOverlaysPath, true);
-
                 Directory.CreateDirectory(SavedOverlaysPath);
+
+                foreach (string file in Directory.EnumerateFiles(SavedOverlaysPath))
+                    File.Delete(file); // Empty the directory
 
                 for (int i = 1; i <= Overlays.Count; i++)
                 {
@@ -536,7 +527,10 @@ namespace ScreenOverlayManager.ViewModel
                         string.Format(OverlayNameFormat, i.ToString("D3"))
                     );
 
-                    SaveOverlay(Overlays[i - 1].Resource, filename, false);
+                    if (File.Exists(filename))
+                        File.Delete(filename);
+
+                    SaveOverlay(Overlays[i - 1].Resource, filename);
                 }
 
                 UnsavedChanges = false; // successfully saved everything
@@ -545,14 +539,14 @@ namespace ScreenOverlayManager.ViewModel
             {
                 Extender.Debugging.ExceptionTools.WriteExceptionText
                 (
-                    e, 
-                    true, 
-                    "Encountered a problem while saving overlays."
+                    e,
+                    true,
+                    "Encountered a problem while saving overlay states."
                 );
             }
         }
 
-        protected void SaveOverlay(Overlay overlay, string fullPath, bool warn = true)
+        protected void SaveOverlay(Overlay overlay, string fullPath)
         {
             StreamWriter stream = null;
             try
@@ -560,22 +554,9 @@ namespace ScreenOverlayManager.ViewModel
                 stream = File.CreateText(fullPath);
                 overlay.Serialize(stream);
             }
-            catch (Exception e)
-            {
-                if(warn)
-                System.Windows.Forms.MessageBox.Show
-                (
-                    string.Format("A problem was encountered while saving the current " +
-                                    "overlay states.\n\n{0}\nFor {1}",
-                                    Extender.Debugging.ExceptionTools.CreateExceptionText(e, false),
-                                    overlay.ToString())
-                );
-
-                if (DEBUG) Extender.Debugging.ExceptionTools.WriteExceptionText(e, true);
-            }
             finally
             {
-                stream.Dispose();
+                if(stream != null) stream.Dispose();
             }
         }
 

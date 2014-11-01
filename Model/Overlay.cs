@@ -16,6 +16,10 @@ namespace ScreenOverlayManager.Model
         /// </summary>
         private static int X_CutoffMin = -10000;
 
+        /// <summary>
+        /// Gets or sets the thickness used to draw overlay borders and
+        /// crosshairs.
+        /// </summary>
         public double Thickness
         {
             get
@@ -29,6 +33,9 @@ namespace ScreenOverlayManager.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the width of the overlay.
+        /// </summary>
         public double Width
         {
             get
@@ -42,6 +49,9 @@ namespace ScreenOverlayManager.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the height of the overlay.
+        /// </summary>
         public double Height
         {
             get
@@ -214,7 +224,8 @@ namespace ScreenOverlayManager.Model
         {
             get
             {
-                return Width - (Thickness * 2);
+                double iw = Width - (Thickness * 2);
+                return iw >= 0 ? iw : 0;
             }
         }
 
@@ -223,7 +234,8 @@ namespace ScreenOverlayManager.Model
         {
             get
             {
-                return Height - (Thickness * 2);
+                double ih = Height - (Thickness * 2);
+                return ih >= 0 ? ih : 0;
             }
         }
 
@@ -616,14 +628,15 @@ namespace ScreenOverlayManager.Model
         public override string ToString()
         {
             return string.Format
-                (
-                    @"Overlay ""{0}"" [ @({1},{2}) - {3} & {4} - {5} ]",
-                    this.Name,
-                    this.X, this.Y,
-                    this.PrimaryColor.ToString(),
-                    this.SecondaryColor.ToString(),
-                    this.IsVisible ? "Visible" : "Hidden"
-                );
+            (
+                @"Overlay ""{0}"" @{6} [ ({1},{2}) - {3} & {4} - {5} ]",
+                this.Name,
+                this.X, this.Y,
+                this.PrimaryColor.ToString(),
+                this.SecondaryColor.ToString(),
+                this.IsVisible ? "Visible" : "Hidden",
+                this.ParentTitle
+            );
         }
 
         public override bool Equals(object obj)
@@ -647,30 +660,53 @@ namespace ScreenOverlayManager.Model
             else return false;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        public event DraggingStartEventHandler DraggingStarted;
-        public event DraggingEndEventHandler DraggingEnded;
+        public override int GetHashCode()
+        {
+            byte[][] blocks = new byte[11][];
+
+            blocks[0] = System.Text.Encoding.Default.GetBytes(Name);
+            blocks[1] = BitConverter.GetBytes(X);
+            blocks[2] = BitConverter.GetBytes(Y);
+            blocks[3] = BitConverter.GetBytes(Width);
+            blocks[4] = BitConverter.GetBytes(Height);
+            blocks[5] = System.Text.Encoding.Default.GetBytes(PrimaryColor.ToString());
+            blocks[6] = System.Text.Encoding.Default.GetBytes(SecondaryColor.ToString());
+            blocks[7] = BitConverter.GetBytes(DrawBorder);
+            blocks[8] = BitConverter.GetBytes(DrawCrosshair);
+            blocks[9] = System.Text.Encoding.Default.GetBytes(ParentTitle);
+            blocks[10] = BitConverter.GetBytes(IsVisible);
+
+            return BitConverter.ToInt32
+                (
+                    Extender.ObjectUtils.Hashing.GenerateHashCode(blocks),
+                    0
+                );
+        }
+
+        public event PropertyChangedEventHandler    PropertyChanged;
+        public event DraggingStartEventHandler      DraggingStarted;
+        public event DraggingEndEventHandler        DraggingEnded;
 
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
 
             if (handler != null)
-            {
                 handler(this, new PropertyChangedEventArgs(propertyName));
-            }
         }
 
         private void OnDraggingStarted()
         {
             DraggingStartEventHandler handler = DraggingStarted;
 
-            if(handler != null)
-            {
+            if(handler != null) 
                 handler(this);
-            }
-            Extender.Debugging.Debug.WriteMessage("OnDraggingStarted.",
-                Properties.Settings.Default.Debugging);
+
+            Extender.Debugging.Debug.WriteMessage
+            (
+                "OnDraggingStarted.",
+                Properties.Settings.Default.Debugging
+            );
         }
 
         private void OnDraggingEnded()
@@ -678,11 +714,13 @@ namespace ScreenOverlayManager.Model
             DraggingEndEventHandler handler = DraggingEnded;
 
             if(handler != null)
-            {
                 handler(this);
-            }
-            Extender.Debugging.Debug.WriteMessage("OnDraggingEnded.",
-                Properties.Settings.Default.Debugging);
+
+            Extender.Debugging.Debug.WriteMessage
+            (
+                "OnDraggingEnded.",
+                Properties.Settings.Default.Debugging
+            );
         }
 
         private void DimensionChanged()

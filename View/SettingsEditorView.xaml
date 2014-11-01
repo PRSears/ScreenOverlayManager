@@ -72,15 +72,14 @@
                 <CheckBox IsChecked="{Binding Debugging}">
                     <TextBlock Text="Enable debugging"/>
                 </CheckBox>
-                <Label Content="Output file: "
-                       Margin="0,-2,0,0"
-                       VerticalContentAlignment="Top"
-                       Visibility="{Binding DebuggingOptionsVisibility}"/>
-                <TextBox Text="{Binding LogfilePath}"
-                         Width="210"
-                         Visibility="{Binding DebuggingOptionsVisibility}"/>
             </StackPanel>
-
+            <Label Content="Output file: "
+                    Margin="0,-2,0,0"
+                    VerticalContentAlignment="Top"
+                    Visibility="{Binding DebuggingOptionsVisibility}"/>
+            <TextBox Text="{Binding LogfilePath}"
+                        Width="250"
+                        Visibility="{Binding DebuggingOptionsVisibility}"/>
 
             <Separator Margin="0,0,0,15"/>
             
@@ -103,13 +102,15 @@
                          Width="90"
                          Margin="0,0,10,10"/>
             </StackPanel>
-            <Label Content="Overlay Width         Overlay Height"/>
+            <Label Content="Overlay Width &amp; Height"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox Text="{Binding OverlayWidth}"
-                         Width="50"/>
+                         Width="90"
+                         Margin="0,0,0,10"/>
+                <Label Content="x"
+                       Margin="0"/>
                 <TextBox Text="{Binding OverlayHeight}"
-                         Width="50"
-                         Margin="30,0,10,10"/>
+                         Width="90"/>
             </StackPanel>
             <Label Content="Overlay Stroke Thickness"/>
             <TextBox Text="{Binding StrokeThickness}"

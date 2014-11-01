@@ -33,20 +33,17 @@ namespace ScreenOverlayManager.View
             this.ViewModel.RegisterCloseAction(() => this.Close());
             this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
-            this.OverlaysListBox.SelectionChanged += (s, e) =>
-            {
-                // prevents listings getting highlighted (such as on right click)
-                // so that checking the radio button is the only visual queue
-                OverlaysListBox.UnselectAll(); 
-            };
+            // prevents listings getting highlighted (such as on right click)
+            // so that checking the radio button is the only visual queue
+            this.OverlaysListBox.SelectionChanged += (s, e) => OverlaysListBox.UnselectAll();
+
+            Tray = (TaskbarIcon)this.TryFindResource("TrayIcon");            
+            if(Tray != null) this.Tray.DataContext = this.ViewModel;
 
             UpdateWindowState();
-
-            this.Tray = (TaskbarIcon)this.TryFindResource("TrayIcon");
-            this.Tray.DataContext = this.ViewModel;
         }
 
-        public void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        protected void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName.Equals("Overlays"))
                 this.OverlaysListBox.Items.Refresh();

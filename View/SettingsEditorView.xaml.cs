@@ -28,7 +28,15 @@ namespace ScreenOverlayManager.View
             InitializeComponent();
 
             ViewModel = new SettingsEditorViewModel();
-            ViewModel.PropertyChanged += (s, e) => Properties.Settings.Default.Save();
+            ViewModel.PropertyChanged += (s, e) => 
+                {
+                    Properties.Settings.Default.Save();
+                    Extender.Debugging.Debug.WriteMessage
+                    (
+                        "Saving default settings.",
+                        Properties.Settings.Default.Debugging
+                    );
+                };
         }
     }
 }
