@@ -129,10 +129,6 @@ namespace ScreenOverlayManager.Model
                 {
                     return new Vector(X, Y);
                 }
-                else if (ParentInfo.State == ParentInfo.ParentState.NotFound)
-                {
-                    return this.Position - ParentInfo.Position;
-                }
                 else
                 {
                     return this.Position - ParentInfo.Position;
@@ -619,8 +615,10 @@ namespace ScreenOverlayManager.Model
                 }
                 else
                 {
-                    this.X = newAbsPos.X;
+                    this._X = newAbsPos.X; 
                     this.Y = newAbsPos.Y;
+                    // Only raise OnPropertyChanged for Y so handler doesn't get called twice
+                    // for the same change
                 }
             }
         }

@@ -55,14 +55,13 @@ namespace ScreenOverlayManager
             this.CheckParentTimer = new System.Windows.Threading.DispatcherTimer
             {
                 Interval = new TimeSpan(0, 0, 0, 0, UpdateInterval),
-                IsEnabled = !string.IsNullOrWhiteSpace(this.ViewModel.Overlay.ParentTitle)            
+                IsEnabled = !string.IsNullOrWhiteSpace(this.ViewModel.Overlay.ParentTitle)
             };
             this.CheckParentTimer.Tick += (s, e) => UpdateOverlayPosition();
 
             this.SyncWindowLocation();
             this.Width  = ViewModel.Overlay.Width;
             this.Height = ViewModel.Overlay.Height;
-
         }
 
         private void Overlay_DraggingStarted(object sender)
@@ -124,6 +123,8 @@ namespace ScreenOverlayManager
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
+
+            this.Handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
             this.DeactivateHitTest();
         }
 
@@ -134,31 +135,29 @@ namespace ScreenOverlayManager
             // Don't want to move the window around when the user is trying to place it
             if (ViewModel.Overlay.Draggable) return;
 
-
-            this.Left   = ViewModel.Overlay.X;
-            this.Top    = ViewModel.Overlay.Y;
+            this.Left = ViewModel.Overlay.X;
+            this.Top = ViewModel.Overlay.Y;
         }
 
         protected void UpdateOverlayPosition()
         {
             // Store the overlay's current offset from parent
             Vector currentOffset = ViewModel.Overlay.OffsetFromParent;
+
             // Recheck parent position
             ViewModel.Overlay.ParentInfo.CheckPosition(true);
+
             // Move the overlay to its new position
             ViewModel.Overlay.MoveTo(currentOffset, true);
         }
         
         /// <summary>
-        /// Uses a WindowsInteropHelper to get the Handle of this WPF Window. 
-        /// [Read-Only]
+        /// Gets the Window handle for this overlay.
         /// </summary>
         public IntPtr Handle
         {
-            get
-            {
-                return new System.Windows.Interop.WindowInteropHelper(this).Handle;
-            }
+            get;
+            private set;
         }
 
         protected void DeactivateHitTest()
@@ -185,14 +184,13 @@ namespace ScreenOverlayManager
         // IsHitTestVisible=false doesn't seem to work on elements drawn to a canvas...
         // So all this bullshit is still required! What the fuck is the point of turning off
         // hit tests if it doesn't work for all elements drawn on the widnow?
-
-
-        public enum GWL
+        
+        private enum GWL
         {
             ExStyle = -20
         }
 
-        public enum WS_EX
+        private enum WS_EX
         {
             Transparent = 0x20,
             Layered = 0x80000
@@ -201,10 +199,10 @@ namespace ScreenOverlayManager
         //http://msdn.microsoft.com/en-us/library/windows/desktop/ff700543%28v=vs.85%29.aspx
 
         [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
-        public static extern int GetWindowLong(IntPtr hWnd, GWL nIndex);
+        private static extern int GetWindowLong(IntPtr hWnd, GWL nIndex);
 
         [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
-        public static extern int SetWindowLong(IntPtr hWnd, GWL nIndex, int dwNewLong);
+        private static extern int SetWindowLong(IntPtr hWnd, GWL nIndex, int dwNewLong);
         #endregion
 
         private int UpdateInterval

@@ -64,9 +64,14 @@ namespace ScreenOverlayManager.ViewModel
             (
                 () =>
                 {
-                    System.Drawing.Point center = Screen.FromPoint(Location).Bounds.GetCenter();
-                    EditingOverlay.X = center.X - (EditingOverlay.Width / 2);
-                    EditingOverlay.Y = center.Y - (EditingOverlay.Height / 2);
+                    Screen containingScreen = Screen.FromPoint(Location);
+                    System.Drawing.Point center = containingScreen.Bounds.GetCenter();
+
+                    center.X += containingScreen.Bounds.X; 
+                    center.Y += containingScreen.Bounds.Y;
+                    
+                    EditingOverlay.X = center.X - (EditingOverlay.Width / 2d);
+                    EditingOverlay.Y = center.Y - (EditingOverlay.Height / 2d);
                 }
             );
 
