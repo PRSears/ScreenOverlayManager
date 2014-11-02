@@ -365,10 +365,12 @@ namespace ScreenOverlayManager.ViewModel
                 {
                     OpenExistingOverlay(OverlayFromFile(dialog.FileName));
                 }
-                catch
+                catch(Exception e)
                 {
+                    Extender.Debugging.ExceptionTools.WriteExceptionText(e, true);
+
                     System.Windows.Forms.MessageBox.Show("The selected file could not be imported.\n" +
-                        "Make sure the file is a properly formatted Overlay XML file.");
+                        "Make sure the file is a properly formatted Overlay XML file.", "Error Importing");
                 }
             }
         }
@@ -409,7 +411,26 @@ namespace ScreenOverlayManager.ViewModel
                 if (File.Exists(dialog.FileName))
                     File.Delete(dialog.FileName);
 
-                SaveOverlay(Selected, dialog.FileName);
+                try
+                {
+                    SaveOverlay(Selected, dialog.FileName);
+                }
+                catch(Exception e)
+                {
+
+                    Extender.Debugging.ExceptionTools.WriteExceptionText
+                    (
+                        e,
+                        true,
+                        "Encountered a problem while saving overlay states."
+                    );
+
+                    System.Windows.MessageBox.Show
+                    (
+                        "There was a problem saving the overlay file.\nCheck debug log (if enabled) for details.", 
+                        "Error While Saving"
+                    );
+                }
             }
         }
 
